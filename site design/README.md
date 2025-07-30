@@ -48,6 +48,56 @@ This application simulates the workflow described in the provided PlantUML seque
 - **UI Framework**: Microsoft Fluent UI React v9
 - **Routing**: React Router DOM v6
 - **Styling**: CSS-in-JS with Fluent UI's makeStyles
+
+## Deployment
+
+### GitHub Pages
+The application is deployed to GitHub Pages at: https://abhiur_microsoft.github.io/prototypes/
+
+```bash
+npm run deploy
+```
+
+### Azure Static Web Apps
+To deploy to Azure Static Web Apps:
+
+1. **Create Azure Static Web App Resource:**
+   - Go to Azure Portal
+   - Create a new Static Web App
+   - Connect to your GitHub repository: `https://github.com/abhiur_microsoft/prototypes`
+   - Set build details:
+     - App location: `/`
+     - Output location: `dist`
+
+2. **Configure GitHub Repository:**
+   - The deployment token will be automatically added as `AZURE_STATIC_WEB_APPS_API_TOKEN` secret
+   - GitHub Actions workflow is already configured in `.github/workflows/azure-static-web-apps.yml`
+
+3. **Automatic Deployment:**
+   - Push to main branch triggers automatic deployment
+   - GitHub Actions handles build and deployment to Azure
+
+## Build Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Deploy to GitHub Pages
+npm run deploy
+
+# Build specifically for Azure (with base path /)
+npm run build:azure
+```
 - **Icons**: Fluent UI React Icons
 
 ## Getting Started
