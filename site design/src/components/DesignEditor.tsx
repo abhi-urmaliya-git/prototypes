@@ -24,6 +24,10 @@ import {
   TableHeader,
   TableHeaderCell,
   TableCellLayout,
+  Field,
+  Dropdown,
+  Option,
+  Input,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -44,6 +48,9 @@ import {
   Map24Regular,
   Checkmark24Regular,
   LineHorizontal120Regular,
+  BotSparkle24Regular,
+  CheckmarkCircle24Regular,
+  Send24Regular,
 } from '@fluentui/react-icons'
 
 const useStyles = makeStyles({
@@ -294,9 +301,12 @@ const mockDesignData = {
 
 export default function DesignEditor() {
   const styles = useStyles()
-  const [leftTab, setLeftTab] = useState('layers')
+  const [leftTab, setLeftTab] = useState('generate')
   const [rightTab, setRightTab] = useState('table')
   const [selectedHierarchy, setSelectedHierarchy] = useState<HierarchyNode | null>(null)
+  // Generate tab state
+  const [designTarget, setDesignTarget] = useState<string>('wan')
+  const [designPrompt, setDesignPrompt] = useState('')
 
   const getHierarchyIcon = (type: string) => {
     switch (type) {
@@ -346,6 +356,53 @@ export default function DesignEditor() {
           </Tree>
         )}
       </TreeItem>
+    )
+  }
+
+  const renderGenerateTab = () => {
+    const handleGenerate = () => {
+      // Simulate AI design generation
+      console.log('Generating design with:', { designTarget, designPrompt })
+      // In a real application, this would trigger the AI model
+      // and update the canvas with the generated design
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '16px' }}>
+        <Field label="Design Target">
+          <Dropdown
+            value={designTarget}
+            onOptionSelect={(_, data) => setDesignTarget(data.optionValue as string)}
+            placeholder="Select design target..."
+          >
+            <Option value="wan">WAN</Option>
+            <Option value="lan">LAN</Option>
+            <Option value="wlan">WLAN</Option>
+          </Dropdown>
+        </Field>
+
+        <Field 
+          label="Design Template & Requirements"
+        >
+          <Textarea
+            value={designPrompt}
+            onChange={(_, data) => setDesignPrompt(data.value)}
+            placeholder="Example: Create a three-tier campus network with redundant core switches, distribution layer with VLANs for different departments, and access layer with PoE switches for wireless APs. Include HSRP for high availability..."
+            rows={8}
+            resize="vertical"
+          />
+        </Field>
+
+        <Button
+          appearance="primary"
+          icon={<BotSparkle24Regular />}
+          onClick={handleGenerate}
+          disabled={!designTarget || !designPrompt.trim()}
+          style={{ alignSelf: 'flex-start' }}
+        >
+          Generate Design
+        </Button>
+      </div>
     )
   }
 
@@ -505,7 +562,7 @@ connections:
 
   return (
     <div className={styles.container}>
-      {/* Left Panel - Layers & Project Details */}
+      {/* Left Panel - Generate, Layers & Project Details */}
       <div className={styles.leftPanel}>
         <div className={styles.panelTabs}>
           <TabList 
@@ -513,11 +570,13 @@ connections:
             onTabSelect={(_, data) => setLeftTab(data.value as string)}
             size="small"
           >
+            <Tab value="generate">Generate</Tab>
             <Tab value="layers">Layers</Tab>
             <Tab value="project">Project Details</Tab>
           </TabList>
         </div>
         <div className={styles.panelContent}>
+          {leftTab === 'generate' && renderGenerateTab()}
           {leftTab === 'layers' && renderLayersTab()}
           {leftTab === 'project' && renderProjectDetailsTab()}
         </div>
@@ -539,8 +598,9 @@ connections:
             <Button size="small" appearance="subtle" icon={<ZoomFit24Regular />} title="Zoom to Fit" />
             <Button size="small" appearance="subtle" icon={<ZoomIn24Regular />} title="Zoom In" />
             <Divider vertical />
-            <Button size="small" appearance="primary" icon={<Save24Regular />}>Save</Button>
-            <Button size="small" appearance="primary">Submit</Button>
+            <Button size="small" appearance="subtle" icon={<Save24Regular />} title="Save" />
+            <Button size="small" appearance="subtle" icon={<CheckmarkCircle24Regular />} title="Validate" />
+            <Button size="small" appearance="subtle" icon={<Send24Regular />} title="Submit" />
           </div>
         </div>
         <div className={styles.canvasViewport}>

@@ -16,13 +16,6 @@ import {
   shorthands,
   tokens,
   Divider,
-  Dialog,
-  DialogTrigger,
-  DialogSurface,
-  DialogTitle,
-  DialogContent,
-  DialogBody,
-  DialogActions,
   Field,
   Dropdown,
   Option,
@@ -32,6 +25,7 @@ import {
   Add24Regular,
   Eye24Regular,
   DocumentArrowRight24Regular,
+  Dismiss24Regular,
 } from '@fluentui/react-icons'
 import { useNavigate } from 'react-router-dom'
 
@@ -40,6 +34,21 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     ...shorthands.gap('20px'),
+    position: 'relative',
+  },
+  containerWithPanel: {
+    display: 'flex',
+    flexDirection: 'row',
+    ...shorthands.gap('20px'),
+    position: 'relative',
+    height: 'calc(100vh - 125px)',
+  },
+  mainContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    ...shorthands.gap('20px'),
+    ...shorthands.overflow('auto'),
   },
   header: {
     display: 'flex',
@@ -62,10 +71,35 @@ const useStyles = makeStyles({
     display: 'flex',
     ...shorthands.gap('8px'),
   },
-  dialogContent: {
+  panel: {
+    width: '400px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    flexDirection: 'column',
+    ...shorthands.padding('24px'),
+    ...shorthands.gap('20px'),
+    position: 'relative',
+  },
+  panelHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  panelContent: {
     display: 'flex',
     flexDirection: 'column',
     ...shorthands.gap('16px'),
+    flex: 1,
+  },
+  panelFooter: {
+    display: 'flex',
+    ...shorthands.gap('8px'),
+    justifyContent: 'flex-end',
+    marginTop: 'auto',
+    paddingTop: '16px',
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   noResults: {
     textAlign: 'center',
@@ -119,7 +153,7 @@ export default function IntakeView() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [intakeItems, setIntakeItems] = useState<IntakeItem[]>(mockIntakeData)
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [isImportPanelOpen, setIsImportPanelOpen] = useState(false)
   const [importSource, setImportSource] = useState<'ADO' | 'SNOW'>('ADO')
   const [importId, setImportId] = useState('')
 
@@ -146,7 +180,7 @@ export default function IntakeView() {
         priority: 'Medium',
       }
       setIntakeItems([...intakeItems, newItem])
-      setIsImportDialogOpen(false)
+      setIsImportPanelOpen(false)
       setImportId('')
     }
   }
@@ -161,131 +195,149 @@ export default function IntakeView() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Title2>Project Intake Management</Title2>
-        <Dialog open={isImportDialogOpen} onOpenChange={(_, data) => setIsImportDialogOpen(data.open)}>
-          <DialogTrigger disableButtonEnhancement>
-            <Button appearance="primary" icon={<Add24Regular />}>
-              Import Project
-            </Button>
-          </DialogTrigger>
-          <DialogSurface>
-            <DialogTitle>Import Project from External System</DialogTitle>
-            <DialogContent>
-              <DialogBody>
-                <div className={styles.dialogContent}>
-                  <Field label="Target System">
-                    <Dropdown
-                      value={importSource}
-                      onOptionSelect={(_, data) => setImportSource(data.optionValue as 'ADO' | 'SNOW')}
-                    >
-                      <Option value="ADO">Azure DevOps (ADO)</Option>
-                      <Option value="SNOW">ServiceNow (SNOW)</Option>
-                    </Dropdown>
-                  </Field>
-                  <Field label="Unique ID">
-                    <Input
-                      placeholder="Enter work item ID or RITM number"
-                      value={importId}
-                      onChange={(_, data) => setImportId(data.value)}
-                    />
-                  </Field>
-                </div>
-              </DialogBody>
-              <DialogActions>
-                <DialogTrigger disableButtonEnhancement>
-                  <Button appearance="secondary">Cancel</Button>
-                </DialogTrigger>
-                <Button appearance="primary" onClick={handleImport}>
-                  Import
-                </Button>
-              </DialogActions>
-            </DialogContent>
-          </DialogSurface>
-        </Dialog>
+    <div className={isImportPanelOpen ? styles.containerWithPanel : styles.container}>
+      <div className={styles.mainContent}>
+        <div className={styles.header}>
+          <Title2>Project Intake Management</Title2>
+          <Button 
+            appearance="primary" 
+            icon={<Add24Regular />}
+            onClick={() => setIsImportPanelOpen(true)}
+          >
+            Import Project
+          </Button>
+        </div>
+
+        <Card>
+          <div style={{ padding: '24px' }}>
+            <div className={styles.searchSection}>
+              <Input
+                placeholder="Search projects by title or ID..."
+                value={searchTerm}
+                onChange={(_, data) => setSearchTerm(data.value)}
+                contentBefore={<Search24Regular />}
+                style={{ flexGrow: 1 }}
+              />
+              <Button appearance="primary" onClick={handleSearch}>
+                Search
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <Body1><strong>Intake Items ({filteredItems.length})</strong></Body1>
+          </CardHeader>
+          <Divider />
+          <div style={{ padding: '24px' }}>
+            {filteredItems.length === 0 ? (
+              <div className={styles.noResults}>
+                <Body1>No records found</Body1>
+              </div>
+            ) : (
+              <div className={styles.tableContainer}>
+                <Table arial-label="Intake items table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHeaderCell>ID</TableHeaderCell>
+                      <TableHeaderCell>Title</TableHeaderCell>
+                      <TableHeaderCell>Source</TableHeaderCell>
+                      <TableHeaderCell>Status</TableHeaderCell>
+                      <TableHeaderCell>Created</TableHeaderCell>
+                      <TableHeaderCell>Assignee</TableHeaderCell>
+                      <TableHeaderCell>Priority</TableHeaderCell>
+                      <TableHeaderCell>Actions</TableHeaderCell>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{item.title}</TableCell>
+                        <TableCell>{item.source}</TableCell>
+                        <TableCell>{item.status}</TableCell>
+                        <TableCell>{item.createdDate}</TableCell>
+                        <TableCell>{item.assignee}</TableCell>
+                        <TableCell>{item.priority}</TableCell>
+                        <TableCell>
+                          <div className={styles.actionCell}>
+                            <Button
+                              appearance="subtle"
+                              icon={<Eye24Regular />}
+                              size="small"
+                              onClick={() => handleViewDetails(item)}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              appearance="primary"
+                              icon={<DocumentArrowRight24Regular />}
+                              size="small"
+                              onClick={() => handleCreateDesign(item.id)}
+                            >
+                              Create Design
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
 
-      <Card>
-        <div style={{ padding: '24px' }}>
-          <div className={styles.searchSection}>
-            <Input
-              placeholder="Search projects by title or ID..."
-              value={searchTerm}
-              onChange={(_, data) => setSearchTerm(data.value)}
-              contentBefore={<Search24Regular />}
-              style={{ flexGrow: 1 }}
+      {isImportPanelOpen && (
+        <div className={styles.panel}>
+          <div className={styles.panelHeader}>
+            <Title2>Import Project</Title2>
+            <Button
+              appearance="subtle"
+              icon={<Dismiss24Regular />}
+              onClick={() => setIsImportPanelOpen(false)}
             />
-            <Button appearance="primary" onClick={handleSearch}>
-              Search
+          </div>
+          
+          <div className={styles.panelContent}>
+            <Field label="Target System">
+              <Dropdown
+                value={importSource}
+                onOptionSelect={(_, data) => setImportSource(data.optionValue as 'ADO' | 'SNOW')}
+              >
+                <Option value="ADO">Azure DevOps (ADO)</Option>
+                <Option value="SNOW">ServiceNow (SNOW)</Option>
+              </Dropdown>
+            </Field>
+            
+            <Field label={importSource === 'ADO' ? 'Work Item ID' : 'RITM'}>
+              <Input
+                placeholder={importSource === 'ADO' ? 'Enter work item ID' : 'Enter RITM number'}
+                value={importId}
+                onChange={(_, data) => setImportId(data.value)}
+              />
+            </Field>
+          </div>
+
+          <div className={styles.panelFooter}>
+            <Button 
+              appearance="secondary" 
+              onClick={() => setIsImportPanelOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              appearance="primary" 
+              onClick={handleImport}
+              disabled={!importId}
+            >
+              Import
             </Button>
           </div>
         </div>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <Body1><strong>Intake Items ({filteredItems.length})</strong></Body1>
-        </CardHeader>
-        <Divider />
-        <div style={{ padding: '24px' }}>
-          {filteredItems.length === 0 ? (
-            <div className={styles.noResults}>
-              <Body1>No records found</Body1>
-            </div>
-          ) : (
-            <div className={styles.tableContainer}>
-              <Table arial-label="Intake items table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHeaderCell>ID</TableHeaderCell>
-                    <TableHeaderCell>Title</TableHeaderCell>
-                    <TableHeaderCell>Source</TableHeaderCell>
-                    <TableHeaderCell>Status</TableHeaderCell>
-                    <TableHeaderCell>Created</TableHeaderCell>
-                    <TableHeaderCell>Assignee</TableHeaderCell>
-                    <TableHeaderCell>Priority</TableHeaderCell>
-                    <TableHeaderCell>Actions</TableHeaderCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.title}</TableCell>
-                      <TableCell>{item.source}</TableCell>
-                      <TableCell>{item.status}</TableCell>
-                      <TableCell>{item.createdDate}</TableCell>
-                      <TableCell>{item.assignee}</TableCell>
-                      <TableCell>{item.priority}</TableCell>
-                      <TableCell>
-                        <div className={styles.actionCell}>
-                          <Button
-                            appearance="subtle"
-                            icon={<Eye24Regular />}
-                            size="small"
-                            onClick={() => handleViewDetails(item)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            appearance="primary"
-                            icon={<DocumentArrowRight24Regular />}
-                            size="small"
-                            onClick={() => handleCreateDesign(item.id)}
-                          >
-                            Create Design
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-      </Card>
+      )}
     </div>
   )
 }

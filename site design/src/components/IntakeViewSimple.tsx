@@ -29,6 +29,8 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
+  Field,
+  Dropdown,
 } from '@fluentui/react-components'
 import {
   Search24Regular,
@@ -38,6 +40,8 @@ import {
   BotSparkle20Regular,
   ChevronDown16Regular,
   Dismiss16Regular,
+  Add24Regular,
+  Dismiss24Regular,
 } from '@fluentui/react-icons'
 
 const useStyles = makeStyles({
@@ -247,6 +251,54 @@ const useStyles = makeStyles({
     ...shorthands.padding('12px', '0'),
     borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
   },
+  // Import Panel styles
+  containerWithPanel: {
+    display: 'flex',
+    flexDirection: 'row',
+    height: '100%',
+    width: '100%',
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  importPanel: {
+    position: 'fixed',
+    top: '60px', // Account for top bar
+    right: '0',
+    width: '400px',
+    height: 'calc(100vh - 60px)',
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke2),
+    boxShadow: tokens.shadow28,
+    transform: 'translateX(100%)',
+    transition: 'transform 0.3s ease',
+    zIndex: 1000,
+    overflow: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    ...shorthands.padding('24px'),
+    ...shorthands.gap('20px'),
+  },
+  importPanelOpen: {
+    transform: 'translateX(0)',
+  },
+  importPanelHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  importPanelContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    ...shorthands.gap('16px'),
+    flex: 1,
+  },
+  importPanelFooter: {
+    display: 'flex',
+    ...shorthands.gap('8px'),
+    justifyContent: 'flex-end',
+    marginTop: 'auto',
+    paddingTop: '16px',
+  },
 })
 
 interface IntakeItem {
@@ -363,9 +415,13 @@ export default function IntakeView() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  const [intakeItems] = useState<IntakeItem[]>(mockIntakeData)
+  const [intakeItems, setIntakeItems] = useState<IntakeItem[]>(mockIntakeData)
   const [engineerFilter, setEngineerFilter] = useState<string>('')
   const [siteTypeFilter, setSiteTypeFilter] = useState<string>('')
+  // Import panel state
+  const [isImportPanelOpen, setIsImportPanelOpen] = useState(false)
+  const [importSource, setImportSource] = useState<'ADO' | 'SNOW'>('ADO')
+  const [importId, setImportId] = useState('')
 
   const selectedProject = selectedProjectId 
     ? intakeItems.find(item => item.projectId === selectedProjectId)
@@ -396,6 +452,26 @@ export default function IntakeView() {
 
   const closeDetailsPanel = () => {
     setSelectedProjectId(null)
+  }
+
+  const handleImport = () => {
+    if (importId) {
+      // Simulate importing from ADO or SNOW
+      const newItem: IntakeItem = {
+        projectId: `${importSource}-${importId}`,
+        intakeId: `INT-${Date.now()}`,
+        title: `Imported Project from ${importSource}`,
+        engineer: 'Current User (currentuser@company.com)',
+        adoId: importSource === 'ADO' ? importId : '',
+        siteType: 'Brownfield',
+        status: 'IntakeSubmitted',
+        createdOn: new Date().toLocaleDateString(),
+        comments: '--',
+      }
+      setIntakeItems([...intakeItems, newItem])
+      setIsImportPanelOpen(false)
+      setImportId('')
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -450,6 +526,15 @@ export default function IntakeView() {
               onValueChange={setSiteTypeFilter}
               onClear={() => setSiteTypeFilter('')}
             />
+          </div>
+          <div className={styles.rightToolbar}>
+            <Button 
+              appearance="primary" 
+              icon={<Add24Regular />}
+              onClick={() => setIsImportPanelOpen(true)}
+            >
+              Import Project
+            </Button>
           </div>
         </div>
 
@@ -586,6 +671,63 @@ export default function IntakeView() {
             <Body2>items per page</Body2>
           </div>
         </div>
+      </div>
+
+      {/* Import Panel */}
+      <div 
+        className={`${styles.overlay} ${isImportPanelOpen ? styles.overlayVisible : ''}`}
+        onClick={() => setIsImportPanelOpen(false)}
+      />
+      
+      <div className={`${styles.importPanel} ${isImportPanelOpen ? styles.importPanelOpen : ''}`}>
+        {isImportPanelOpen && (
+          <>
+            <div className={styles.importPanelHeader}>
+              <Title3>Import Project</Title3>
+              <Button
+                appearance="subtle"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsImportPanelOpen(false)}
+              />
+            </div>
+            
+            <div className={styles.importPanelContent}>
+              <Field label="Target System">
+                <Dropdown
+                  value={importSource}
+                  onOptionSelect={(_, data) => setImportSource(data.optionValue as 'ADO' | 'SNOW')}
+                >
+                  <Option value="ADO">Azure DevOps (ADO)</Option>
+                  <Option value="SNOW">ServiceNow (SNOW)</Option>
+                </Dropdown>
+              </Field>
+              
+              <Field label={importSource === 'ADO' ? 'Work Item ID' : 'RITM'}>
+                <Input
+                  placeholder={importSource === 'ADO' ? 'Enter work item ID' : 'Enter RITM number'}
+                  value={importId}
+                  onChange={(_, data) => setImportId(data.value)}
+                />
+              </Field>
+            </div>
+
+            <div className={styles.importPanelFooter}>
+              <Button 
+                appearance="secondary" 
+                onClick={() => setIsImportPanelOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                appearance="primary" 
+                onClick={handleImport}
+                disabled={!importId}
+              >
+                Import
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Overlay */}
