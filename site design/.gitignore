@@ -87,7 +87,7 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public
+# public (commented out for this project - we want to track public folder)
 
 # Storybook build outputs
 .out

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Design Engineering Prototype</title>
+    <!-- Fluent UI CSS -->
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/css/fabric.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #faf9f8;
+        }
+        .header {
+            background-color: #0078d4;
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .nav-button {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .nav-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        .nav-button.active {
+            background-color: white;
+            color: #0078d4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #edebe9;
+            background-color: #f8f9fa;
+        }
+        .card-body {
+            padding: 24px;
+        }
+        .btn {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .btn:hover {
+            background-color: #106ebe;
+        }
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #0078d4;
+            color: #0078d4;
+        }
+        .btn-outline:hover {
+            background-color: #0078d4;
+            color: white;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #edebe9;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d2d0ce;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .search-section {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d2d0ce;
+            border-radius: 4px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-new {
+            background-color: #e1f5fe;
+            color: #0277bd;
+        }
+        .status-progress {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        .status-ready {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="margin: 0;">Network Design Engineering</h1>
+        <div class="nav">
+            <button class="nav-button active" onclick="showView('intake')">Intake</button>
+            <button class="nav-button" onclick="showView('design')">Design</button>
+            <button class="nav-button" onclick="showView('bom')">BOM</button>
+            <button class="nav-button" onclick="showView('cable-map')">Cable Map</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Intake View -->
+        <div id="intake-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="margin: 0;">Project Intake Management</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div></div>
+                        <button class="btn" onclick="showImportDialog()">+ Import Project</button>
+                    </div>
+                    
+                    <div class="search-section">
+                        <input type="text" class="search-input" placeholder="Search projects by title or ID..." id="searchInput">
+                        <button class="btn" onclick="searchProjects()">Search</button>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Assignee</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTable">
+                            <tr>
+                                <td>ADO-123</td>
+                                <td>Network Infrastructure Upgrade - Data Center A</td>
+                                <td>ADO</td>
+                                <td><span class="status-badge status-new">New</span></td>
+                                <td>2025-01-15</td>
+                                <td>John Smith</td>
+                                <td>High</td>
+                                <td>
+                                    <button class="btn btn-outline" onclick="viewDetails('ADO-123')">View</button>
+                                    <button class="btn" onclick="createDesign('ADO-123')">Create Design</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>SNOW-456</td>
+                                <td>Branch Office Network Setup</td>
+                                <td>SNOW</td>
+                                <td><span class="status-badge status-progress">In Progress</span></td>
+                                <td>2025-01-20</td>
+                                <td>Jane Doe</td>
+                                <td>Medium</td>
+                                <td>
+                                    <button class="btn btn-outline" onclick="viewDetails('SNOW-456')">View</button>
+                                    <button class="btn" onclick="createDesign('SNOW-456')">Create Design</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ADO-789</td>
+                                <td>Security Enhancement Project</td>
+                                <td>ADO</td>
+                                <td><span class="status-badge status-ready">Ready for Design</span></td>
+                                <td>2025-01-25</td>
+                                <td>Mike Johnson</td>
+                                <td>High</td>
+                                <td>
+                                    <button class="btn btn-outline" onclick="viewDetails('ADO-789')">View</button>
+                                    <button class="btn" onclick="createDesign('ADO-789')">Create Design</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design View -->
+        <div id="design-view" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0;">Design Editor</h2>
+                        <div>
+                            <button class="btn" onclick="generateWithAI()">🤖 Generate with AI</button>
+                            <button class="btn btn-outline" onclick="validateDesign()">▶️ Validate Design</button>
+                            <button class="btn" onclick="saveDesign()">💾 Save Design</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="grid">
+                        <div>
+                            <h3>Design Metadata</h3>
+                            <div class="form-group">
+                                <label class="form-label">Design Target</label>
+                                <select class="form-control">
+                                    <option>Data Center</option>
+                                    <option>Branch Office</option>
+                                    <option>Campus Network</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Design Sample/Reference</label>
+                                <select class="form-control">
+                                    <option>Standard 3-Tier</option>
+                                    <option>Spine-Leaf</option>
+                                    <option>Collapsed Core</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Latest Approved Design</label>
+                                <p>SGO-v2.1 (Retrieved from GraphStore)</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Latest Deployed State</label>
+                                <p>Observability data from IG service</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Editor</h3>
+                            <div style="margin-bottom: 16px;">
+                                <button class="btn btn-outline" onclick="showEditor('tabular')">📊 Tabular</button>
+                                <button class="btn btn-outline" onclick="showEditor('json')">{ } JSON</button>
+                                <button class="btn btn-outline" onclick="showEditor('yaml')">📄 YAML</button>
+                            </div>
+                            <div id="tabular-editor">
+                                <h4>Network Nodes</h4>
+                                <div class="form-group">
+                                    <label class="form-label">Node Name</label>
+                                    <input type="text" class="form-control" value="Core Switch 1">
+                                </div>
+                                <h4>Network Edges (Links)</h4>
+                                <div class="form-group">
+                                    <label class="form-label">Connection</label>
+                                    <input type="text" class="form-control" value="Core Switch 1 → Core Switch 2 (10Gbps)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOM View -->
+        <div id="bom-view" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0;">Bill of Materials (BOM)</h2>
+                        <div>
+                            <button class="btn" onclick="generateBOM()">📋 Generate from Design</button>
+                            <button class="btn btn-outline" onclick="validateBOM()">▶️ Validate BOM</button>
+                            <button class="btn" onclick="saveBOM()">💾 Save BOM</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">$21,350</h3>
+                            <p style="margin: 4px 0 0 0;">Total Cost</p>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">20</h3>
+                            <p style="margin: 4px 0 0 0;">Total Items</p>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">3</h3>
+                            <p style="margin: 4px 0 0 0;">Line Items</p>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">4 weeks</h3>
+                            <p style="margin: 4px 0 0 0;">Max Delivery</p>
+                        </div>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Part Number</th>
+                                <th>Description</th>
+                                <th>Vendor</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total Price</th>
+                                <th>Delivery</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>C9300-48T</td>
+                                <td>Catalyst 9300 48-port switch</td>
+                                <td>Cisco</td>
+                                <td>2</td>
+                                <td>$8,500</td>
+                                <td>$17,000</td>
+                                <td>4 weeks</td>
+                            </tr>
+                            <tr>
+                                <td>CAB-SFP-SFP-1M</td>
+                                <td>1m SFP+ Twinax Cable</td>
+                                <td>Cisco</td>
+                                <td>10</td>
+                                <td>$75</td>
+                                <td>$750</td>
+                                <td>1 week</td>
+                            </tr>
+                            <tr>
+                                <td>SFP-10G-SR</td>
+                                <td>10Gb SFP+ SR Transceiver</td>
+                                <td>Cisco</td>
+                                <td>8</td>
+                                <td>$450</td>
+                                <td>$3,600</td>
+                                <td>2 weeks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cable Map View -->
+        <div id="cable-map-view" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0;">Cable Map Management</h2>
+                        <div>
+                            <button class="btn" onclick="generateCableMap()">🔌 Generate from Design</button>
+                            <button class="btn btn-outline" onclick="validateCableMap()">▶️ Validate Cable Map</button>
+                            <button class="btn" onclick="saveCableMap()">💾 Save Cable Map</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">3</h3>
+                            <p style="margin: 4px 0 0 0;">Total Cables</p>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">3</h3>
+                            <p style="margin: 4px 0 0 0;">Fiber Cables</p>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background-color: #f8f9fa; border-radius: 4px;">
+                            <h3 style="margin: 0; color: #0078d4;">0</h3>
+                            <p style="margin: 4px 0 0 0;">Copper Cables</p>
+                        </div>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cable ID</th>
+                                <th>From Device</th>
+                                <th>From Port</th>
+                                <th>To Device</th>
+                                <th>To Port</th>
+                                <th>Cable Type</th>
+                                <th>Length</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CAB-001</td>
+                                <td>Core-SW-01</td>
+                                <td>Te1/0/1</td>
+                                <td>Core-SW-02</td>
+                                <td>Te1/0/1</td>
+                                <td>Fiber OM4</td>
+                                <td>3m</td>
+                                <td>Primary trunk link</td>
+                            </tr>
+                            <tr>
+                                <td>CAB-002</td>
+                                <td>Core-SW-01</td>
+                                <td>Te1/0/2</td>
+                                <td>Access-SW-01</td>
+                                <td>Te1/0/24</td>
+                                <td>Fiber OM4</td>
+                                <td>15m</td>
+                                <td>Uplink to access layer</td>
+                            </tr>
+                            <tr>
+                                <td>CAB-003</td>
+                                <td>Core-SW-02</td>
+                                <td>Te1/0/2</td>
+                                <td>Access-SW-02</td>
+                                <td>Te1/0/24</td>
+                                <td>Fiber OM4</td>
+                                <td>18m</td>
+                                <td>Uplink to access layer</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showView(viewName) {
+            // Hide all views
+            document.querySelectorAll('[id$="-view"]').forEach(view => {
+                view.classList.add('hidden');
+            });
+            
+            // Show selected view
+            document.getElementById(viewName + '-view').classList.remove('hidden');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Intake functions
+        function showImportDialog() {
+            const source = prompt('Select target system:\n1. ADO (Azure DevOps)\n2. SNOW (ServiceNow)\n\nEnter 1 or 2:');
+            if (source) {
+                const id = prompt('Enter work item ID or RITM number:');
+                if (id) {
+                    alert(`Importing from ${source === '1' ? 'ADO' : 'SNOW'} with ID: ${id}`);
+                }
+            }
+        }
+
+        function searchProjects() {
+            const searchTerm = document.getElementById('searchInput').value;
+            alert('Searching for: ' + searchTerm);
+        }
+
+        function viewDetails(projectId) {
+            alert('Viewing details for project: ' + projectId);
+        }
+
+        function createDesign(projectId) {
+            alert('Creating design for project: ' + projectId);
+            showView('design');
+        }
+
+        // Design functions
+        function generateWithAI() {
+            alert('Generating design with AI AutoDesign service...');
+        }
+
+        function validateDesign() {
+            alert('Validating design with AutoDesign rulesets...');
+        }
+
+        function saveDesign() {
+            alert('Saving design to GraphStore...');
+        }
+
+        function showEditor(type) {
+            alert('Switching to ' + type + ' editor');
+        }
+
+        // BOM functions
+        function generateBOM() {
+            alert('Generating BOM from design...');
+        }
+
+        function validateBOM() {
+            alert('Validating BOM with AutoDesign rulesets...');
+        }
+
+        function saveBOM() {
+            alert('Saving BOM to GraphStore...');
+        }
+
+        // Cable Map functions
+        function generateCableMap() {
+            alert('Generating Cable Map from design...');
+        }
+
+        function validateCableMap() {
+            alert('Validating Cable Map with AutoDesign rulesets...');
+        }
+
+        function saveCableMap() {
+            alert('Saving Cable Map to GraphStore...');
+        }
+    </script>
+</body>
+</html>

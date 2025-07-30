@@ -1,0 +1,582 @@
+import { useState } from 'react'
+import {
+  Button,
+  Title3,
+  Body1,
+  Body2,
+  Card,
+  CardHeader,
+  makeStyles,
+  shorthands,
+  tokens,
+  Divider,
+  TabList,
+  Tab,
+  Textarea,
+  Tree,
+  TreeItem,
+  TreeItemLayout,
+  Badge,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableHeader,
+  TableHeaderCell,
+  TableCellLayout,
+} from '@fluentui/react-components'
+import {
+  Save24Regular,
+  TableSimple24Regular,
+  Code24Regular,
+  Document24Regular,
+  BuildingMultiple24Regular,
+  Building24Regular,
+  Server24Regular,
+  Router24Regular,
+  Circle16Regular,
+  ZoomIn24Regular,
+  ZoomOut24Regular,
+  ZoomFit24Regular,
+  Cursor24Regular,
+  Add24Regular,
+  DocumentTable24Regular,
+  Map24Regular,
+  Checkmark24Regular,
+  LineHorizontal120Regular,
+} from '@fluentui/react-icons'
+
+const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    height: 'calc(100vh - 125px)',
+    width: '100%',
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  leftPanel: {
+    width: '20%',
+    minWidth: '280px',
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  centerCanvas: {
+    width: '60%',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  rightPanel: {
+    width: '20%',
+    minWidth: '280px',
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  canvasToolbar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...shorthands.padding('8px', '16px'),
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    minHeight: '40px',
+    height: '40px',
+    flexShrink: 0,
+  },
+  canvasToolbarLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    ...shorthands.gap('8px'),
+  },
+  canvasToolbarRight: {
+    display: 'flex',
+    alignItems: 'center',
+    ...shorthands.gap('8px'),
+  },
+  canvasViewport: {
+    flex: 1,
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#f8f9fa',
+    backgroundImage: `
+      radial-gradient(circle, ${tokens.colorNeutralStroke3} 1px, transparent 1px)
+    `,
+    backgroundSize: '20px 20px',
+  },
+  panelTabs: {
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    ...shorthands.padding('4px', '16px'),
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '40px',
+    height: '40px',
+    flexShrink: 0,
+  },
+  panelContent: {
+    flex: 1,
+    ...shorthands.padding('2px'),
+    overflow: 'auto',
+    minHeight: 0,
+  },
+  panelContentCode: {
+    flex: 1,
+    ...shorthands.padding('2px'),
+    overflow: 'hidden',
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  treeItem: {
+    '&[aria-expanded="true"] .tree-icon': {
+      transform: 'rotate(90deg)',
+    },
+    '&[aria-selected="true"]': {
+      backgroundColor: tokens.colorBrandBackground2,
+      '&:hover': {
+        backgroundColor: tokens.colorBrandBackground2,
+      },
+    },
+  },
+  deviceCard: {
+    marginBottom: '8px',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+  },
+  selectedDevice: {
+    backgroundColor: tokens.colorBrandBackground2,
+  },
+  rightPanelActions: {
+    ...shorthands.padding('4px', '16px'),
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    flexDirection: 'row',
+    ...shorthands.gap('4px'),
+    flexShrink: 0,
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  hierarchyLevel: {
+    ...shorthands.padding('4px', '8px'),
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: tokens.borderRadiusSmall,
+    fontSize: '12px',
+    fontWeight: '600',
+  },
+  deviceIcon: {
+    color: tokens.colorBrandForeground1,
+  },
+  codeEditor: {
+    fontFamily: 'Consolas, "Courier New", monospace',
+    fontSize: '12px',
+    width: '100%',
+    height: '100%',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusSmall,
+    resize: 'none',
+    overflow: 'auto',
+    boxSizing: 'border-box',
+    flex: '1',
+    minHeight: '0',
+  },
+})
+
+interface HierarchyNode {
+  id: string
+  name: string
+  type: 'building' | 'floor' | 'cableroom' | 'rack' | 'slot'
+  children?: HierarchyNode[]
+  devices?: Device[]
+}
+
+interface Device {
+  id: string
+  name: string
+  type: 'switch' | 'router' | 'server' | 'firewall'
+  status: 'online' | 'offline' | 'warning'
+  ports?: number
+  location?: string
+}
+
+const mockHierarchy: HierarchyNode[] = [
+  {
+    id: 'building1',
+    name: 'Main Building',
+    type: 'building',
+    children: [
+      {
+        id: 'floor1',
+        name: 'Floor 1',
+        type: 'floor',
+        children: [
+          {
+            id: 'cableroom1',
+            name: 'Cable Room A',
+            type: 'cableroom',
+            children: [
+              {
+                id: 'rack1',
+                name: 'Rack A1',
+                type: 'rack',
+                children: [
+                  {
+                    id: 'slot1',
+                    name: 'Slot 1',
+                    type: 'slot',
+                    devices: [
+                      { id: 'sw1', name: 'Core Switch 01', type: 'switch', status: 'online', ports: 48 },
+                      { id: 'rt1', name: 'Router 01', type: 'router', status: 'online', ports: 24 },
+                    ]
+                  },
+                  {
+                    id: 'slot2',
+                    name: 'Slot 2',
+                    type: 'slot',
+                    devices: [
+                      { id: 'fw1', name: 'Firewall 01', type: 'firewall', status: 'warning', ports: 16 },
+                    ]
+                  }
+                ]
+              },
+              {
+                id: 'rack2',
+                name: 'Rack A2',
+                type: 'rack',
+                children: [
+                  {
+                    id: 'slot3',
+                    name: 'Slot 1',
+                    type: 'slot',
+                    devices: [
+                      { id: 'sv1', name: 'Server 01', type: 'server', status: 'online' },
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+
+const mockProjectData = {
+  projectId: '22',
+  title: 'test_lan_port_exp',
+  engineer: 'Deepak Yadav',
+  status: 'Approved',
+  siteType: 'Brownfield',
+  description: 'Testing LAN port expansion for data center connectivity',
+  priority: 'Medium',
+  estimatedDuration: '4 weeks',
+}
+
+const mockDesignData = {
+  nodes: [
+    { id: 'sw1', name: 'Core Switch 01', type: 'switch', location: 'Rack A1/Slot 1' },
+    { id: 'rt1', name: 'Router 01', type: 'router', location: 'Rack A1/Slot 1' },
+    { id: 'fw1', name: 'Firewall 01', type: 'firewall', location: 'Rack A1/Slot 2' },
+  ],
+  connections: [
+    { from: 'sw1', to: 'rt1', type: 'ethernet', speed: '10Gbps' },
+    { from: 'rt1', to: 'fw1', type: 'ethernet', speed: '1Gbps' },
+  ]
+}
+
+export default function DesignEditor() {
+  const styles = useStyles()
+  const [leftTab, setLeftTab] = useState('layers')
+  const [rightTab, setRightTab] = useState('table')
+  const [selectedHierarchy, setSelectedHierarchy] = useState<HierarchyNode | null>(null)
+
+  const getHierarchyIcon = (type: string) => {
+    switch (type) {
+      case 'building': return <BuildingMultiple24Regular />
+      case 'floor': return <Building24Regular />
+      case 'cableroom': return <Server24Regular />
+      case 'rack': return <Server24Regular />
+      case 'slot': return <LineHorizontal120Regular />
+      default: return <Circle16Regular />
+    }
+  }
+
+  const getDeviceIcon = (type: string) => {
+    switch (type) {
+      case 'switch': return <Router24Regular className={styles.deviceIcon} />
+      case 'router': return <Router24Regular className={styles.deviceIcon} />
+      case 'firewall': return <Router24Regular className={styles.deviceIcon} />
+      case 'server': return <Server24Regular className={styles.deviceIcon} />
+      default: return <Circle16Regular />
+    }
+  }
+
+  const renderTreeNode = (node: HierarchyNode, level: number = 0): JSX.Element => {
+    const hasChildren = node.children && node.children.length > 0
+    const isSelected = selectedHierarchy?.id === node.id
+    
+    return (
+      <TreeItem
+        key={node.id}
+        className={styles.treeItem}
+        itemType={hasChildren ? "branch" : "leaf"}
+        value={node.id}
+        style={isSelected ? { backgroundColor: tokens.colorBrandBackground2 } : undefined}
+      >
+        <TreeItemLayout 
+          iconBefore={getHierarchyIcon(node.type)}
+          onClick={() => setSelectedHierarchy(node)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{node.name}</span>
+            <Badge appearance="outline" size="small">{node.type}</Badge>
+          </div>
+        </TreeItemLayout>
+        {hasChildren && (
+          <Tree>
+            {node.children!.map(child => renderTreeNode(child, level + 1))}
+          </Tree>
+        )}
+      </TreeItem>
+    )
+  }
+
+  const renderLayersTab = () => (
+    <div>
+      <Tree 
+        aria-label="Site Hierarchy"
+      >
+        {mockHierarchy.map(node => renderTreeNode(node))}
+      </Tree>
+    </div>
+  )
+
+  const renderProjectDetailsTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Card>
+        <CardHeader>
+          <Title3>Project Information</Title3>
+        </CardHeader>
+        <div style={{ padding: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Project ID:</Body2>
+              <Body1 style={{ fontWeight: '600' }}>{mockProjectData.projectId}</Body1>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Title:</Body2>
+              <Body1>{mockProjectData.title}</Body1>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Engineer:</Body2>
+              <Body1>{mockProjectData.engineer}</Body1>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Status:</Body2>
+              <Badge appearance="filled" color="success">{mockProjectData.status}</Badge>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Site Type:</Body2>
+              <Body1>{mockProjectData.siteType}</Body1>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Body2>Priority:</Body2>
+              <Body1>{mockProjectData.priority}</Body1>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <Title3>Description</Title3>
+        </CardHeader>
+        <div style={{ padding: '16px' }}>
+          <Body1>{mockProjectData.description}</Body1>
+        </div>
+      </Card>
+    </div>
+  )
+
+  const renderTableTab = () => (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ marginBottom: '4px' }}>
+        <Title3>Network Devices</Title3>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto', marginBottom: '4px' }}>
+        <Table size="small">
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>Device</TableHeaderCell>
+              <TableHeaderCell>Type</TableHeaderCell>
+              <TableHeaderCell>Location</TableHeaderCell>
+              <TableHeaderCell>Status</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mockDesignData.nodes.map((node) => (
+              <TableRow key={node.id}>
+                <TableCell>
+                  <TableCellLayout media={getDeviceIcon(node.type)}>
+                    {node.name}
+                  </TableCellLayout>
+                </TableCell>
+                <TableCell>{node.type}</TableCell>
+                <TableCell>{node.location}</TableCell>
+                <TableCell>
+                  <Badge appearance="filled" color="success">Online</Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div style={{ marginBottom: '4px' }}>
+        <Title3>Connections</Title3>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <Table size="small">
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>From</TableHeaderCell>
+              <TableHeaderCell>To</TableHeaderCell>
+              <TableHeaderCell>Type</TableHeaderCell>
+              <TableHeaderCell>Speed</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mockDesignData.connections.map((conn, index) => (
+              <TableRow key={index}>
+                <TableCell>{conn.from}</TableCell>
+                <TableCell>{conn.to}</TableCell>
+                <TableCell>{conn.type}</TableCell>
+                <TableCell>{conn.speed}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+
+  const renderJsonTab = () => (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Textarea
+        className={styles.codeEditor}
+        value={JSON.stringify(mockDesignData, null, 2)}
+        placeholder="JSON configuration..."
+      />
+    </div>
+  )
+
+  const renderYamlTab = () => (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Textarea
+        className={styles.codeEditor}
+        value={`# Network Design Configuration
+nodes:
+  - id: sw1
+    name: Core Switch 01
+    type: switch
+    location: Rack A1/Slot 1
+  - id: rt1
+    name: Router 01
+    type: router
+    location: Rack A1/Slot 1
+
+connections:
+  - from: sw1
+    to: rt1
+    type: ethernet
+    speed: 10Gbps`}
+        placeholder="YAML configuration..."
+      />
+    </div>
+  )
+
+  return (
+    <div className={styles.container}>
+      {/* Left Panel - Layers & Project Details */}
+      <div className={styles.leftPanel}>
+        <div className={styles.panelTabs}>
+          <TabList 
+            selectedValue={leftTab} 
+            onTabSelect={(_, data) => setLeftTab(data.value as string)}
+            size="small"
+          >
+            <Tab value="layers">Layers</Tab>
+            <Tab value="project">Project Details</Tab>
+          </TabList>
+        </div>
+        <div className={styles.panelContent}>
+          {leftTab === 'layers' && renderLayersTab()}
+          {leftTab === 'project' && renderProjectDetailsTab()}
+        </div>
+      </div>
+
+      {/* Center Canvas */}
+      <div className={styles.centerCanvas}>
+        <div className={styles.canvasToolbar}>
+          <div className={styles.canvasToolbarLeft}>
+            <Body2 style={{ color: tokens.colorNeutralForeground2 }}>
+              Project: {mockProjectData.title}
+            </Body2>
+          </div>
+          <div className={styles.canvasToolbarRight}>
+            <Button size="small" appearance="subtle" icon={<Cursor24Regular />} title="Pan" />
+            <Button size="small" appearance="subtle" icon={<Add24Regular />} title="Add Device" />
+            <Divider vertical />
+            <Button size="small" appearance="subtle" icon={<ZoomOut24Regular />} title="Zoom Out" />
+            <Button size="small" appearance="subtle" icon={<ZoomFit24Regular />} title="Zoom to Fit" />
+            <Button size="small" appearance="subtle" icon={<ZoomIn24Regular />} title="Zoom In" />
+            <Divider vertical />
+            <Button size="small" appearance="primary" icon={<Save24Regular />}>Save</Button>
+            <Button size="small" appearance="primary">Submit</Button>
+          </div>
+        </div>
+        <div className={styles.canvasViewport}>
+        </div>
+      </div>
+
+      {/* Right Panel - Table/JSON/YAML */}
+      <div className={styles.rightPanel}>
+        <div className={styles.panelTabs}>
+          <TabList 
+            selectedValue={rightTab} 
+            onTabSelect={(_, data) => setRightTab(data.value as string)}
+            size="small"
+          >
+            <Tab value="table" icon={<TableSimple24Regular />}>Table</Tab>
+            <Tab value="json" icon={<Code24Regular />}>JSON</Tab>
+            <Tab value="yaml" icon={<Document24Regular />}>YAML</Tab>
+          </TabList>
+        </div>
+        <div className={rightTab === 'json' || rightTab === 'yaml' ? styles.panelContentCode : styles.panelContent}>
+          {rightTab === 'table' && renderTableTab()}
+          {rightTab === 'json' && renderJsonTab()}
+          {rightTab === 'yaml' && renderYamlTab()}
+        </div>
+        <div className={styles.rightPanelActions}>
+          <Button appearance="outline" icon={<DocumentTable24Regular />} size="small">
+            BOM
+          </Button>
+          <Button appearance="outline" icon={<Map24Regular />} size="small">
+            Cable Map
+          </Button>
+          <Button appearance="outline" icon={<Checkmark24Regular />} size="small">
+            AP Checklist
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
