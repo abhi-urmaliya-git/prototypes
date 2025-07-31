@@ -3,7 +3,7 @@ import Layout from './components/Layout'
 import IntakeView from './components/IntakeViewSimple'
 import ReviewsView from './components/ReviewsView'
 import DesignEditor from './components/DesignEditor'
-import RuleEngine from './components/RuleEngine'
+import DesignStandards from './components/DesignStandards'
 import './App.css'
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
         <Route path="/intake" element={<IntakeView />} />
         <Route path="/reviews" element={<ReviewsView />} />
         <Route path="/design/:projectId" element={<DesignEditor />} />
-        <Route path="/rule-engine" element={<RuleEngine />} />
+        <Route path="/design-standards" element={<DesignStandards />} />
       </Routes>
     </Layout>
   )

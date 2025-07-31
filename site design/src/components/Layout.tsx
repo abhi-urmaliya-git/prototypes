@@ -286,13 +286,13 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
 
                 <div 
-                  className={`${styles.navItem} ${styles.subNavItem} ${isCollapsed ? styles.subNavItemCollapsed : ''} ${isActiveRoute('/rule-engine') ? styles.navItemActive : ''}`}
-                  onClick={() => handleNavigation('/rule-engine')}
-                  title={isCollapsed ? 'Rule Engine' : ''}
+                  className={`${styles.navItem} ${styles.subNavItem} ${isCollapsed ? styles.subNavItemCollapsed : ''} ${isActiveRoute('/design-standards') ? styles.navItemActive : ''}`}
+                  onClick={() => handleNavigation('/design-standards')}
+                  title={isCollapsed ? 'Design Standards' : ''}
                 >
                   <Settings24Regular className={`${styles.navIcon} ${isCollapsed ? styles.navIconCollapsed : ''}`} />
                   <span className={isCollapsed ? styles.navTextHidden : styles.navText}>
-                    Rule Engine
+                    Design Standards
                   </span>
                 </div>
                 
@@ -319,7 +319,7 @@ export default function Layout({ children }: LayoutProps) {
             {location.pathname === '/intake' || location.pathname === '/' ? 'All Intake Forms' :
              location.pathname === '/reviews' ? 'Network Design Reviews' :
              location.pathname.startsWith('/design') ? 'Design Editor' :
-             location.pathname === '/rule-engine' ? 'Network Design Portal' :
+             location.pathname === '/design-standards' ? 'Design Standards' :
              'Network Design Engineering'}
           </Title3>
           {location.pathname === '/reviews' && (
