@@ -34,6 +34,20 @@ import {
   OverlayDrawer,
   InlineDrawer,
   Input,
+  Dialog,
+  DialogTrigger,
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogActions,
+  DialogContent,
+  Toast,
+  ToastTitle,
+  ToastBody,
+  Toaster,
+  useToastController,
+  ToastIntent,
+  Link,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -817,6 +831,12 @@ export default function DesignEditor() {
   // Cable Map drawer state
   const [isCableMapDrawerOpen, setIsCableMapDrawerOpen] = useState(false)
   const [cableMapValidationErrors, setCableMapValidationErrors] = useState<string[]>([])
+  // Submit dialog state
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
+  // Design and review IDs (would come from props or context in real app)
+  const [designId] = useState('DESIGN-2024-001')
+  // Toast controller
+  const { dispatchToast } = useToastController()
   const [bomData, setBomData] = useState<BomItem[]>([
     { 
       id: '1', 
@@ -988,6 +1008,36 @@ export default function DesignEditor() {
 
   const handleValidateClick = () => {
     setIsValidationPanelOpen(true)
+  }
+
+  const handleSubmitClick = () => {
+    setIsSubmitDialogOpen(true)
+  }
+
+  const handleConfirmSubmit = () => {
+    // Generate a review ID (in real app, this would come from API response)
+    const reviewId = `REV-${Date.now().toString().slice(-6)}`
+    
+    // Close dialog
+    setIsSubmitDialogOpen(false)
+    
+    // Show success toast
+    dispatchToast(
+      <Toast>
+        <ToastTitle>Design Submitted Successfully</ToastTitle>
+        <ToastBody>
+          Design {designId} has been submitted for network design review. Review ID: {reviewId}.{' '}
+          <Link href="/reviews" onClick={(e) => {
+            e.preventDefault()
+            // In a real app, you would use proper routing here
+            console.log('Navigate to ReviewsView page')
+          }}>
+            View Review Status
+          </Link>
+        </ToastBody>
+      </Toast>,
+      { intent: 'success' as ToastIntent }
+    )
   }
 
   const renderValidationPanel = () => {
@@ -1372,7 +1422,13 @@ connections:
               title="Validate" 
               onClick={handleValidateClick}
             />
-            <Button size="small" appearance="subtle" icon={<Send24Regular />} title="Submit" />
+            <Button 
+              size="small" 
+              appearance="subtle" 
+              icon={<Send24Regular />} 
+              title="Submit" 
+              onClick={handleSubmitClick}
+            />
             <Button 
               size="small" 
               appearance="subtle" 
@@ -2079,6 +2135,36 @@ connections:
           </Button>
         </DrawerFooter>
       </OverlayDrawer>
+
+      {/* Submit Confirmation Dialog */}
+      <Dialog open={isSubmitDialogOpen} onOpenChange={(_, data) => setIsSubmitDialogOpen(data.open)}>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>Confirm Design Submission</DialogTitle>
+            <DialogContent>
+              <Body1>
+                Are you sure you want to submit design <strong>{designId}</strong> for network design review?
+              </Body1>
+              <Body2 style={{ marginTop: '8px', color: tokens.colorNeutralForeground3 }}>
+                Once submitted, the design will be sent to the review team for evaluation. You will receive a review ID to track the progress.
+              </Body2>
+            </DialogContent>
+            <DialogActions>
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="secondary" onClick={() => setIsSubmitDialogOpen(false)}>
+                  Cancel
+                </Button>
+              </DialogTrigger>
+              <Button appearance="primary" onClick={handleConfirmSubmit}>
+                Submit for Review
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+
+      {/* Toast Container */}
+      <Toaster />
     </div>
   )
 }
