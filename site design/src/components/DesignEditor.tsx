@@ -6,6 +6,7 @@ import {
   Body2,
   Card,
   CardHeader,
+  CardPreview,
   makeStyles,
   shorthands,
   tokens,
@@ -26,6 +27,12 @@ import {
   Field,
   Dropdown,
   Option,
+  DrawerBody,
+  DrawerHeader,
+  DrawerHeaderTitle,
+  DrawerFooter,
+  OverlayDrawer,
+  InlineDrawer,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -492,31 +499,15 @@ const useStyles = makeStyles({
     height: 'calc(100vh - 125px)',
     width: '100%',
     backgroundColor: tokens.colorNeutralBackground1,
-  },
-  leftPanel: {
-    width: '20%',
-    minWidth: '280px',
-    backgroundColor: tokens.colorNeutralBackground2,
-    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
+    position: 'relative',
   },
   centerCanvas: {
-    width: '60%',
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
     backgroundColor: tokens.colorNeutralBackground1,
-  },
-  rightPanel: {
-    width: '20%',
-    minWidth: '280px',
-    backgroundColor: tokens.colorNeutralBackground2,
-    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
+    minWidth: 0, // Allow canvas to shrink
   },
   canvasToolbar: {
     display: 'flex',
@@ -549,30 +540,6 @@ const useStyles = makeStyles({
     `,
     backgroundSize: '20px 20px',
   },
-  panelTabs: {
-    backgroundColor: tokens.colorNeutralBackground2,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    ...shorthands.padding('4px', '16px'),
-    display: 'flex',
-    alignItems: 'center',
-    minHeight: '40px',
-    height: '40px',
-    flexShrink: 0,
-  },
-  panelContent: {
-    flex: 1,
-    ...shorthands.padding('2px'),
-    overflow: 'auto',
-    minHeight: 0,
-  },
-  panelContentCode: {
-    flex: 1,
-    ...shorthands.padding('2px'),
-    overflow: 'hidden',
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-  },
   treeItem: {
     '&[aria-expanded="true"] .tree-icon': {
       transform: 'rotate(90deg)',
@@ -593,15 +560,6 @@ const useStyles = makeStyles({
   },
   selectedDevice: {
     backgroundColor: tokens.colorBrandBackground2,
-  },
-  rightPanelActions: {
-    ...shorthands.padding('4px', '16px'),
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    flexDirection: 'row',
-    ...shorthands.gap('4px'),
-    flexShrink: 0,
-    backgroundColor: tokens.colorNeutralBackground2,
   },
   hierarchyLevel: {
     ...shorthands.padding('4px', '8px'),
@@ -626,123 +584,6 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
     flex: '1',
     minHeight: '0',
-  },
-  // Canvas device styles
-  canvasDevice: {
-    position: 'absolute',
-    width: '80px',
-    height: '80px',
-    backgroundColor: tokens.colorNeutralBackground1,
-    border: `2px solid ${tokens.colorBrandStroke1}`,
-    borderRadius: tokens.borderRadiusMedium,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    boxShadow: tokens.shadow4,
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground1Hover,
-    },
-  },
-  canvasDeviceIcon: {
-    fontSize: '24px',
-    color: tokens.colorBrandForeground1,
-    marginBottom: '4px',
-  },
-  deviceLabel: {
-    fontSize: '10px',
-    fontWeight: '600',
-    textAlign: 'center',
-    color: tokens.colorNeutralForeground1,
-    lineHeight: '1.2',
-  },
-  deviceConnection: {
-    position: 'absolute',
-    stroke: tokens.colorBrandStroke1,
-    strokeWidth: '2',
-    fill: 'none',
-    pointerEvents: 'none',
-  },
-  connectionLabel: {
-    position: 'absolute',
-    fontSize: '10px',
-    fontWeight: '500',
-    color: tokens.colorNeutralForeground2,
-    backgroundColor: tokens.colorNeutralBackground1,
-    ...shorthands.padding('2px', '4px'),
-    borderRadius: tokens.borderRadiusSmall,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  validationOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '350px',
-    height: '100%',
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
-    boxShadow: tokens.shadow16,
-    zIndex: 1000,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  validationHeader: {
-    ...shorthands.padding('16px'),
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: tokens.colorNeutralBackground2,
-  },
-  validationContent: {
-    flex: 1,
-    overflow: 'auto',
-    ...shorthands.padding('16px'),
-  },
-  validationRule: {
-    ...shorthands.padding('12px'),
-    borderRadius: tokens.borderRadiusSmall,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    marginBottom: '8px',
-    backgroundColor: tokens.colorNeutralBackground1,
-  },
-  validationRulePassed: {
-    ...shorthands.border('1px', 'solid', '#107c10'),
-    backgroundColor: '#f3f9f3',
-  },
-  validationRuleFailed: {
-    ...shorthands.border('1px', 'solid', '#d13438'),
-    backgroundColor: '#fdf3f4',
-  },
-  validationRuleWarning: {
-    ...shorthands.border('1px', 'solid', '#ff8c00'),
-    backgroundColor: '#fffdf3',
-  },
-  validationRuleHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    ...shorthands.gap('8px'),
-    marginBottom: '4px',
-  },
-  validationRuleTitle: {
-    fontWeight: '600',
-    fontSize: '14px',
-  },
-  validationRuleMessage: {
-    fontSize: '13px',
-    color: tokens.colorNeutralForeground2,
-    marginBottom: '4px',
-  },
-  validationRuleDetails: {
-    fontSize: '12px',
-    color: tokens.colorNeutralForeground3,
-  },
-  validationSummary: {
-    ...shorthands.padding('12px'),
-    backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: tokens.borderRadiusSmall,
-    marginBottom: '16px',
   },
 })
 
@@ -927,6 +768,8 @@ export default function DesignEditor() {
   const [designTarget, setDesignTarget] = useState<string>('wan')
   const [designPrompt, setDesignPrompt] = useState('')
   const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false)
+  const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(true)
+  const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(true)
 
   const [, setEditor] = useState<any>(null)
 
@@ -978,54 +821,81 @@ export default function DesignEditor() {
     const totalRules = mockValidationRules.length
 
     return (
-      <div className={styles.validationOverlay}>
-        <div className={styles.validationHeader}>
-          <Title3>Design Validation</Title3>
-          <Button 
-            appearance="subtle" 
-            icon={<Dismiss24Regular />} 
-            onClick={() => setIsValidationPanelOpen(false)}
-            size="small"
-          />
-        </div>
-        <div className={styles.validationContent}>
-          <div className={styles.validationSummary}>
-            <Title3 style={{ marginBottom: '8px' }}>Validation Summary</Title3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <Body2>Total Rules: {totalRules}</Body2>
-              <Body2 style={{ color: '#107c10' }}>✓ Passed: {passedRules}</Body2>
-              <Body2 style={{ color: '#d13438' }}>✗ Failed: {failedRules}</Body2>
-              <Body2 style={{ color: '#ff8c00' }}>⚠ Warnings: {warningRules}</Body2>
-            </div>
-          </div>
+      <OverlayDrawer
+        open={isValidationPanelOpen}
+        onOpenChange={(_, { open }) => setIsValidationPanelOpen(open)}
+        position="start"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
+              <Button
+                appearance="subtle"
+                aria-label="Close"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsValidationPanelOpen(false)}
+              />
+            }
+          >
+            Design Validation
+          </DrawerHeaderTitle>
+        </DrawerHeader>
 
-          {mockValidationRules.map((rule) => {
-            const ruleStyle = rule.status === 'passed' ? styles.validationRulePassed :
-                             rule.status === 'failed' ? styles.validationRuleFailed :
-                             styles.validationRuleWarning
-
-            return (
-              <div key={rule.id} className={`${styles.validationRule} ${ruleStyle}`}>
-                <div className={styles.validationRuleHeader}>
-                  {getValidationIcon(rule.status)}
-                  <div className={styles.validationRuleTitle}>{rule.rule}</div>
+        <DrawerBody>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Validation Summary Card */}
+            <Card>
+              <CardHeader>
+                <div>
+                  <Title3>Validation Summary</Title3>
+                  <Body2>Network design rule compliance</Body2>
                 </div>
-                <Badge 
-                  appearance="outline" 
-                  size="small" 
-                  style={{ marginBottom: '4px' }}
-                >
-                  {rule.category}
-                </Badge>
-                <div className={styles.validationRuleMessage}>{rule.message}</div>
-                {rule.details && (
-                  <div className={styles.validationRuleDetails}>{rule.details}</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
+              </CardHeader>
+              <CardPreview style={{ padding: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <Body1>Total Rules: {totalRules}</Body1>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckmarkCircle24Regular style={{ color: '#107c10' }} />
+                    <Body2>Passed: {passedRules}</Body2>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ErrorCircle24Regular style={{ color: '#d13438' }} />
+                    <Body2>Failed: {failedRules}</Body2>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Warning24Regular style={{ color: '#ff8c00' }} />
+                    <Body2>Warnings: {warningRules}</Body2>
+                  </div>
+                </div>
+              </CardPreview>
+            </Card>
+
+            {/* Individual Validation Rules */}
+            {mockValidationRules.map((rule) => (
+              <Card key={rule.id}>
+                <CardHeader>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {getValidationIcon(rule.status)}
+                    <div>
+                      <Title3 style={{ fontSize: '14px' }}>{rule.rule}</Title3>
+                      <Badge appearance="outline" size="small">{rule.category}</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardPreview style={{ padding: '16px' }}>
+                  <Body2 style={{ marginBottom: '8px' }}>{rule.message}</Body2>
+                  {rule.details && (
+                    <Body2 style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
+                      {rule.details}
+                    </Body2>
+                  )}
+                </CardPreview>
+              </Card>
+            ))}
+          </div>
+        </DrawerBody>
+      </OverlayDrawer>
     )
   }
 
@@ -1120,9 +990,12 @@ export default function DesignEditor() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <Card>
         <CardHeader>
-          <Title3>Project Information</Title3>
+          <div>
+            <Title3>Project Information</Title3>
+            <Body2>Network design project details</Body2>
+          </div>
         </CardHeader>
-        <div style={{ padding: '16px' }}>
+        <CardPreview style={{ padding: '16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Body2>Project ID:</Body2>
@@ -1149,16 +1022,19 @@ export default function DesignEditor() {
               <Body1>{mockProjectData.priority}</Body1>
             </div>
           </div>
-        </div>
+        </CardPreview>
       </Card>
 
       <Card>
         <CardHeader>
-          <Title3>Description</Title3>
+          <div>
+            <Title3>Description</Title3>
+            <Body2>Project scope and objectives</Body2>
+          </div>
         </CardHeader>
-        <div style={{ padding: '16px' }}>
+        <CardPreview style={{ padding: '16px' }}>
           <Body1>{mockProjectData.description}</Body1>
-        </div>
+        </CardPreview>
       </Card>
     </div>
   )
@@ -1262,30 +1138,48 @@ connections:
 
   return (
     <div className={styles.container}>
-      {/* Left Panel - Generate, Layers & Project Details */}
-      <div className={styles.leftPanel}>
-        <div className={styles.panelTabs}>
-          <TabList 
-            selectedValue={leftTab} 
-            onTabSelect={(_, data) => setLeftTab(data.value as string)}
-            size="small"
-          >
-            <Tab value="generate">Generate</Tab>
-            <Tab value="layers">Layers</Tab>
-            <Tab value="project">Project Details</Tab>
-          </TabList>
-        </div>
-        <div className={styles.panelContent}>
-          {leftTab === 'generate' && renderGenerateTab()}
-          {leftTab === 'layers' && renderLayersTab()}
-          {leftTab === 'project' && renderProjectDetailsTab()}
-        </div>
-      </div>
+      {/* Left Drawer - Generate, Layers & Project Details */}
+      <InlineDrawer
+        open={isLeftDrawerOpen}
+        position="start"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle>Design Tools</DrawerHeaderTitle>
+        </DrawerHeader>
+        <DrawerBody>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <TabList 
+              selectedValue={leftTab} 
+              onTabSelect={(_, data) => setLeftTab(data.value as string)}
+              size="small"
+              style={{ marginBottom: '16px' }}
+            >
+              <Tab value="generate">Generate</Tab>
+              <Tab value="layers">Layers</Tab>
+              <Tab value="project">Project Details</Tab>
+            </TabList>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {leftTab === 'generate' && renderGenerateTab()}
+              {leftTab === 'layers' && renderLayersTab()}
+              {leftTab === 'project' && renderProjectDetailsTab()}
+            </div>
+          </div>
+        </DrawerBody>
+      </InlineDrawer>
 
       {/* Center Canvas */}
       <div className={styles.centerCanvas}>
         <div className={styles.canvasToolbar}>
           <div className={styles.canvasToolbarLeft}>
+            <Button 
+              size="small" 
+              appearance="subtle" 
+              onClick={() => setIsLeftDrawerOpen(!isLeftDrawerOpen)}
+              style={{ marginRight: '8px' }}
+            >
+              ☰
+            </Button>
             <Body2 style={{ color: tokens.colorNeutralForeground2 }}>
               Project: {mockProjectData.title}
             </Body2>
@@ -1300,6 +1194,14 @@ connections:
               onClick={handleValidateClick}
             />
             <Button size="small" appearance="subtle" icon={<Send24Regular />} title="Submit" />
+            <Button 
+              size="small" 
+              appearance="subtle" 
+              onClick={() => setIsRightDrawerOpen(!isRightDrawerOpen)}
+              style={{ marginLeft: '8px' }}
+            >
+              ☰
+            </Button>
           </div>
         </div>
         <div className={styles.canvasViewport}>
@@ -1332,36 +1234,48 @@ connections:
         </div>
       </div>
 
-      {/* Right Panel - Table/JSON/YAML */}
-      <div className={styles.rightPanel}>
-        <div className={styles.panelTabs}>
-          <TabList 
-            selectedValue={rightTab} 
-            onTabSelect={(_, data) => setRightTab(data.value as string)}
-            size="small"
-          >
-            <Tab value="table" icon={<TableSimple24Regular />}>Table</Tab>
-            <Tab value="json" icon={<Code24Regular />}>JSON</Tab>
-            <Tab value="yaml" icon={<Document24Regular />}>YAML</Tab>
-          </TabList>
-        </div>
-        <div className={rightTab === 'json' || rightTab === 'yaml' ? styles.panelContentCode : styles.panelContent}>
-          {rightTab === 'table' && renderTableTab()}
-          {rightTab === 'json' && renderJsonTab()}
-          {rightTab === 'yaml' && renderYamlTab()}
-        </div>
-        <div className={styles.rightPanelActions}>
-          <Button appearance="outline" icon={<DocumentTable24Regular />} size="small">
-            BOM
-          </Button>
-          <Button appearance="outline" icon={<Map24Regular />} size="small">
-            Cable Map
-          </Button>
-          <Button appearance="outline" icon={<Checkmark24Regular />} size="small">
-            AP Checklist
-          </Button>
-        </div>
-      </div>
+      {/* Right Drawer - Table/JSON/YAML */}
+      <InlineDrawer
+        open={isRightDrawerOpen}
+        position="end"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle>Design Data</DrawerHeaderTitle>
+        </DrawerHeader>
+        <DrawerBody>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <TabList 
+              selectedValue={rightTab} 
+              onTabSelect={(_, data) => setRightTab(data.value as string)}
+              size="small"
+              style={{ marginBottom: '16px' }}
+            >
+              <Tab value="table" icon={<TableSimple24Regular />}>Table</Tab>
+              <Tab value="json" icon={<Code24Regular />}>JSON</Tab>
+              <Tab value="yaml" icon={<Document24Regular />}>YAML</Tab>
+            </TabList>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {rightTab === 'table' && renderTableTab()}
+              {rightTab === 'json' && renderJsonTab()}
+              {rightTab === 'yaml' && renderYamlTab()}
+            </div>
+          </div>
+        </DrawerBody>
+        <DrawerFooter>
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+            <Button appearance="outline" icon={<DocumentTable24Regular />} size="small">
+              BOM
+            </Button>
+            <Button appearance="outline" icon={<Map24Regular />} size="small">
+              Cable Map
+            </Button>
+            <Button appearance="outline" icon={<Checkmark24Regular />} size="small">
+              AP Checklist
+            </Button>
+          </div>
+        </DrawerFooter>
+      </InlineDrawer>
     </div>
   )
 }
