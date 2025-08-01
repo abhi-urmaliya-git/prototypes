@@ -21,7 +21,6 @@ import {
   TableCellLayout,
   Combobox,
   Option,
-  Title3,
   Card,
   CardHeader,
   Menu,
@@ -455,10 +454,6 @@ export default function IntakeView() {
     navigate(`/design/${projectId}`)
   }
 
-  const closeDetailsPanel = () => {
-    setSelectedProjectId(null)
-  }
-
   const handleImport = () => {
     if (importId) {
       // Simulate importing from ADO or SNOW
@@ -739,44 +734,54 @@ export default function IntakeView() {
         </DrawerFooter>
       </OverlayDrawer>
 
-      {/* Overlay */}
-      <div 
-        className={`${styles.overlay} ${selectedProjectId ? styles.overlayVisible : ''}`}
-        onClick={closeDetailsPanel}
-      />
-
-      {/* Details Panel */}
-      <div className={`${styles.detailsPanel} ${selectedProjectId ? styles.detailsPanelOpen : ''}`}>
-        {selectedProject && (
-          <>
-            <div className={styles.detailsHeader}>
-              <Title3>Project Details</Title3>
+      {/* Project Details Drawer */}
+      <OverlayDrawer
+        open={!!selectedProjectId}
+        onOpenChange={(_, { open }) => {
+          if (!open) {
+            setSelectedProjectId(null)
+          }
+        }}
+        position="end"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
               <Button
                 appearance="subtle"
+                aria-label="Close"
                 icon={<DismissRegular />}
-                onClick={closeDetailsPanel}
+                onClick={() => setSelectedProjectId(null)}
               />
-            </div>
-            <div className={styles.detailsContent}>
+            }
+          >
+            Project Details
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          {selectedProject && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <Card>
                 <CardHeader>
                   <Body1><strong>Project Information</strong></Body1>
                 </CardHeader>
                 <div style={{ padding: '16px' }}>
-                  <div className={styles.detailsSection}>
-                    <div className={styles.detailsField}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Project ID:</Body2>
                       <Body1><strong>{selectedProject.projectId}</strong></Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Intake ID:</Body2>
                       <Body1>{selectedProject.intakeId}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Title:</Body2>
                       <Body1>{selectedProject.title}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Status:</Body2>
                       {getStatusBadge(selectedProject.status)}
                     </div>
@@ -789,24 +794,24 @@ export default function IntakeView() {
                   <Body1><strong>Project Details</strong></Body1>
                 </CardHeader>
                 <div style={{ padding: '16px' }}>
-                  <div className={styles.detailsSection}>
-                    <div className={styles.detailsField}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Engineer:</Body2>
                       <Body1>{selectedProject.engineer}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>ADO ID:</Body2>
                       <Body1>{selectedProject.adoId}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Site Type:</Body2>
                       <Body1>{selectedProject.siteType}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Priority:</Body2>
                       <Body1>{selectedProject.priority}</Body1>
                     </div>
-                    <div className={styles.detailsField}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${tokens.colorNeutralStroke3}` }}>
                       <Body2>Est. Duration:</Body2>
                       <Body1>{selectedProject.estimatedDuration}</Body1>
                     </div>
@@ -831,22 +836,22 @@ export default function IntakeView() {
                   <Body1>{selectedProject.comments}</Body1>
                 </div>
               </Card>
-
-              <div style={{ marginTop: '24px' }}>
-                <Button 
-                  appearance={selectedProject.status === 'Approved' ? "primary" : "subtle"}
-                  style={{ width: '100%' }}
-                  onClick={() => handleCreateDesign(selectedProject.projectId)}
-                  disabled={selectedProject.status !== 'Approved'}
-                  icon={<BotSparkle20Regular />}
-                >
-                  Create Design with AI
-                </Button>
-              </div>
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </DrawerBody>
+
+        <DrawerFooter>
+          <Button 
+            appearance={selectedProject?.status === 'Approved' ? "primary" : "subtle"}
+            onClick={() => selectedProject && handleCreateDesign(selectedProject.projectId)}
+            disabled={selectedProject?.status !== 'Approved'}
+            icon={<BotSparkle20Regular />}
+            style={{ width: '100%' }}
+          >
+            Create Design with AI
+          </Button>
+        </DrawerFooter>
+      </OverlayDrawer>
     </div>
   )
 }
