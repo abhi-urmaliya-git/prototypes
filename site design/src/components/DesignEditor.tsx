@@ -795,6 +795,7 @@ export default function DesignEditor() {
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(true)
   // BOM drawer state
   const [isBomDrawerOpen, setIsBomDrawerOpen] = useState(false)
+  const [bomValidationErrors, setBomValidationErrors] = useState<string[]>([])
   const [bomData, setBomData] = useState<BomItem[]>([
     { 
       id: '1', 
@@ -1384,18 +1385,66 @@ connections:
               <Table size="small">
                 <TableHeader>
                   <TableRow>
-                    <TableHeaderCell>Model Number</TableHeaderCell>
-                    <TableHeaderCell>Item Description</TableHeaderCell>
-                    <TableHeaderCell>Qty</TableHeaderCell>
-                    <TableHeaderCell>Unit Price</TableHeaderCell>
-                    <TableHeaderCell>Total Cost</TableHeaderCell>
-                    <TableHeaderCell>Comments</TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Model Number
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Item Description
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Qty
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Unit Price
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Total Cost
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px'
+                    }}>
+                      Comments
+                    </TableHeaderCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {bomData.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
                         <Input
                           value={item.modelNumber}
                           onChange={(_, data) => {
@@ -1403,10 +1452,15 @@ connections:
                               row.id === item.id ? { ...row, modelNumber: data.value } : row
                             ))
                           }}
-                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                          style={{ 
+                            border: bomValidationErrors.includes(`model-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
                         <Input
                           value={item.itemDescription}
                           onChange={(_, data) => {
@@ -1414,10 +1468,10 @@ connections:
                               row.id === item.id ? { ...row, itemDescription: data.value } : row
                             ))
                           }}
-                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
                         <Input
                           type="number"
                           value={item.qty.toString()}
@@ -1431,10 +1485,15 @@ connections:
                               } : row
                             ))
                           }}
-                          style={{ border: 'none', background: 'transparent', width: '80px' }}
+                          style={{ 
+                            border: bomValidationErrors.includes(`qty-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '80px',
+                            textAlign: 'left'
+                          }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
                         <Input
                           type="number"
                           value={item.unitPrice.toFixed(2)}
@@ -1448,15 +1507,15 @@ connections:
                               } : row
                             ))
                           }}
-                          style={{ border: 'none', background: 'transparent', width: '120px' }}
+                          style={{ border: 'none', background: 'transparent', width: '120px', textAlign: 'left' }}
                         />
                       </TableCell>
-                      <TableCell>
-                        <div style={{ padding: '8px', fontWeight: '600', color: tokens.colorBrandForeground1 }}>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <div style={{ padding: '8px', fontWeight: '600', color: tokens.colorBrandForeground1, textAlign: 'left' }}>
                           ${item.totalCost.toFixed(2)}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
                         <Input
                           value={item.comments}
                           onChange={(_, data) => {
@@ -1464,7 +1523,7 @@ connections:
                               row.id === item.id ? { ...row, comments: data.value } : row
                             ))
                           }}
-                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
                         />
                       </TableCell>
                     </TableRow>
@@ -1494,8 +1553,27 @@ connections:
           <Button 
             appearance="secondary"
             onClick={() => {
-              // Validate BOM data
-              console.log('Validating BOM data...')
+              // Validate BOM data - highlight random cells with errors
+              const errors: string[] = []
+              
+              // Randomly select some Model Number fields to mark as invalid
+              const modelNumberErrors = ['1', '3', '5'] // Random item IDs
+              modelNumberErrors.forEach(id => {
+                if (bomData.find(item => item.id === id)) {
+                  errors.push(`model-${id}`)
+                }
+              })
+              
+              // Randomly select some Qty fields to mark as invalid
+              const qtyErrors = ['2', '4'] // Random item IDs
+              qtyErrors.forEach(id => {
+                if (bomData.find(item => item.id === id)) {
+                  errors.push(`qty-${id}`)
+                }
+              })
+              
+              setBomValidationErrors(errors)
+              console.log('BOM Validation completed. Found errors in:', errors)
             }}
           >
             Validate
@@ -1503,7 +1581,8 @@ connections:
           <Button 
             appearance="primary"
             onClick={() => {
-              // Save BOM data
+              // Save BOM data and clear validation errors
+              setBomValidationErrors([])
               console.log('Saving BOM data...', bomData)
             }}
           >
