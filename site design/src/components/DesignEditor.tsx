@@ -44,10 +44,10 @@ import {
   Toast,
   ToastTitle,
   ToastBody,
+  ToastTrigger,
   Toaster,
   useToastController,
   ToastIntent,
-  Link,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -69,6 +69,7 @@ import {
   Warning24Regular,
   ErrorCircle24Regular,
   Dismiss24Regular,
+  DismissRegular,
 } from '@fluentui/react-icons'
 import { Tldraw, ShapeUtil, TLBaseShape, RecordProps, T, Rectangle2d, HTMLContainer, Geometry2d, TLResizeInfo, resizeBox, StateNode, DefaultToolbar, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, TLComponents, TLUiOverrides, TldrawUiMenuItem, useIsToolSelected, useTools, TLUiAssetUrlOverrides } from 'tldraw'
 import 'tldraw/tldraw.css'
@@ -1021,22 +1022,66 @@ export default function DesignEditor() {
     // Close dialog
     setIsSubmitDialogOpen(false)
     
-    // Show success toast
+    // Function to handle navigation to reviews page
+    const handleNavigateToReviews = () => {
+      try {
+        // Navigate to the reviews page to show all review requests
+        console.log('Navigating to Reviews page')
+        
+        // For demo purposes, just show a success message since the route may not exist yet
+        alert(`Success! Design ${designId} submitted with Review ID: ${reviewId}. Please navigate to Reviews section manually to view all submissions.`)
+      } catch (error) {
+        console.error('Navigation error:', error)
+        alert('Navigation temporarily unavailable. Please check the Reviews section manually.')
+      }
+    }
+    
+    // Show success toast with dismiss button
     dispatchToast(
-      <Toast>
-        <ToastTitle>Design Submitted Successfully</ToastTitle>
-        <ToastBody>
-          Design {designId} has been submitted for network design review. Review ID: {reviewId}.{' '}
-          <Link href="/reviews" onClick={(e) => {
-            e.preventDefault()
-            // In a real app, you would use proper routing here
-            console.log('Navigate to ReviewsView page')
-          }}>
+      <Toast style={{ minWidth: '400px', maxWidth: '500px' }}>
+        <ToastTitle 
+          action={
+            <ToastTrigger>
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<DismissRegular />}
+                aria-label="Dismiss"
+              />
+            </ToastTrigger>
+          }
+        >
+          Design Submitted Successfully
+        </ToastTitle>
+        <ToastBody style={{ whiteSpace: 'normal', lineHeight: '1.4' }}>
+          <div style={{ marginBottom: '8px' }}>
+            Design {designId} has been submitted for network design review.
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            Review ID: <strong>{reviewId}</strong>
+          </div>
+          <Button
+            appearance="transparent"
+            onClick={handleNavigateToReviews}
+            style={{ 
+              textDecoration: 'underline',
+              color: tokens.colorBrandForeground1,
+              cursor: 'pointer',
+              padding: 0,
+              minHeight: 'auto',
+              fontSize: 'inherit',
+              fontWeight: 'normal'
+            }}
+          >
             View Review Status
-          </Link>
+          </Button>
         </ToastBody>
       </Toast>,
-      { intent: 'success' as ToastIntent }
+      { 
+        intent: 'success' as ToastIntent,
+        timeout: 20000,
+        politeness: 'polite'
+      }
     )
   }
 
@@ -2145,9 +2190,9 @@ connections:
               <Body1>
                 Are you sure you want to submit design <strong>{designId}</strong> for network design review?
               </Body1>
-              <Body2 style={{ marginTop: '8px', color: tokens.colorNeutralForeground3 }}>
+              <Body1 style={{ marginTop: '8px' }}>
                 Once submitted, the design will be sent to the review team for evaluation. You will receive a review ID to track the progress.
-              </Body2>
+              </Body1>
             </DialogContent>
             <DialogActions>
               <DialogTrigger disableButtonEnhancement>
@@ -2156,7 +2201,7 @@ connections:
                 </Button>
               </DialogTrigger>
               <Button appearance="primary" onClick={handleConfirmSubmit}>
-                Submit for Review
+                Submit
               </Button>
             </DialogActions>
           </DialogBody>
@@ -2164,7 +2209,13 @@ connections:
       </Dialog>
 
       {/* Toast Container */}
-      <Toaster />
+      <Toaster 
+        position="top-end"
+        pauseOnHover
+        pauseOnWindowBlur
+        timeout={20000}
+        offset={{ horizontal: 120, vertical: 48 }}
+      />
     </div>
   )
 }
