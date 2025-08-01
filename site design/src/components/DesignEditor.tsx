@@ -1022,20 +1022,6 @@ export default function DesignEditor() {
     // Close dialog
     setIsSubmitDialogOpen(false)
     
-    // Function to handle navigation to reviews page
-    const handleNavigateToReviews = () => {
-      try {
-        // Navigate to the reviews page to show all review requests
-        console.log('Navigating to Reviews page')
-        
-        // For demo purposes, just show a success message since the route may not exist yet
-        alert(`Success! Design ${designId} submitted with Review ID: ${reviewId}. Please navigate to Reviews section manually to view all submissions.`)
-      } catch (error) {
-        console.error('Navigation error:', error)
-        alert('Navigation temporarily unavailable. Please check the Reviews section manually.')
-      }
-    }
-    
     // Show success toast with dismiss button
     dispatchToast(
       <Toast style={{ minWidth: '400px', maxWidth: '500px' }}>
@@ -1057,24 +1043,9 @@ export default function DesignEditor() {
           <div style={{ marginBottom: '8px' }}>
             Design {designId} has been submitted for network design review.
           </div>
-          <div style={{ marginBottom: '8px' }}>
+          <div>
             Review ID: <strong>{reviewId}</strong>
           </div>
-          <Button
-            appearance="transparent"
-            onClick={handleNavigateToReviews}
-            style={{ 
-              textDecoration: 'underline',
-              color: tokens.colorBrandForeground1,
-              cursor: 'pointer',
-              padding: 0,
-              minHeight: 'auto',
-              fontSize: 'inherit',
-              fontWeight: 'normal'
-            }}
-          >
-            View Review Status
-          </Button>
         </ToastBody>
       </Toast>,
       { 
