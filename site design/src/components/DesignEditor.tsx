@@ -51,6 +51,446 @@ import {
   CheckmarkCircle24Regular,
   Send24Regular,
 } from '@fluentui/react-icons'
+import { Tldraw, ShapeUtil, TLBaseShape, RecordProps, T, Rectangle2d, HTMLContainer, Geometry2d, TLResizeInfo, resizeBox, StateNode, DefaultToolbar, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, TLComponents, TLUiOverrides, TldrawUiMenuItem, useIsToolSelected, useTools, TLUiAssetUrlOverrides, TldrawUiMenuGroup } from 'tldraw'
+import 'tldraw/tldraw.css'
+
+// Network Device Shape Types
+type NetworkDeviceType = 'router' | 'switch' | 'firewall' | 'server' | 'wireless-controller'
+
+// Network Device Shape Interface
+type NetworkDeviceShape = TLBaseShape<'network-device', {
+  deviceType: string
+  w: number
+  h: number
+}>
+
+// Network Device Shape Utility
+class NetworkDeviceShapeUtil extends ShapeUtil<NetworkDeviceShape> {
+  static override type = 'network-device' as const
+
+  static override props: RecordProps<NetworkDeviceShape> = {
+    deviceType: T.string,
+    w: T.number,
+    h: T.number,
+  }
+
+  getDefaultProps(): NetworkDeviceShape['props'] {
+    return {
+      deviceType: 'router',
+      w: 80,
+      h: 80,
+    }
+  }
+
+  override canEdit() {
+    return false
+  }
+
+  override canResize() {
+    return true
+  }
+
+  override isAspectRatioLocked() {
+    return false
+  }
+
+  getGeometry(shape: NetworkDeviceShape): Geometry2d {
+    return new Rectangle2d({
+      width: shape.props.w,
+      height: shape.props.h,
+      isFilled: true,
+    })
+  }
+
+  override onResize(shape: NetworkDeviceShape, info: TLResizeInfo<NetworkDeviceShape>) {
+    return resizeBox(shape, info)
+  }
+
+  component(shape: NetworkDeviceShape) {
+    const { deviceType } = shape.props
+    
+    const getDeviceIcon = () => {
+      switch (deviceType) {
+        case 'router': return '🔀'
+        case 'switch': return '🔗'
+        case 'firewall': return '🛡️'
+        case 'server': return '🖥️'
+        case 'wireless-controller': return '📡'
+        default: return '📦'
+      }
+    }
+
+    const getDeviceColor = () => {
+      switch (deviceType) {
+        case 'router': return '#0078d4'
+        case 'switch': return '#107c10'
+        case 'firewall': return '#d13438'
+        case 'server': return '#5c2d91'
+        case 'wireless-controller': return '#ff8c00'
+        default: return '#0078d4'
+      }
+    }
+
+    return (
+      <HTMLContainer
+        style={{
+          width: shape.props.w,
+          height: shape.props.h,
+          backgroundColor: getDeviceColor(),
+          borderRadius: '8px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          border: '2px solid #fff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div style={{ fontSize: '24px', marginBottom: '4px' }}>
+          {getDeviceIcon()}
+        </div>
+        <div style={{ textAlign: 'center', lineHeight: '1.2' }}>
+          {deviceType.charAt(0).toUpperCase() + deviceType.slice(1)}
+        </div>
+      </HTMLContainer>
+    )
+  }
+
+  indicator(shape: NetworkDeviceShape) {
+    return <rect width={shape.props.w} height={shape.props.h} />
+  }
+}
+
+// Network Device Tools
+class RouterTool extends StateNode {
+  static override id = 'router-tool'
+
+  override onEnter() {
+    this.editor.setCursor({ type: 'cross', rotation: 0 })
+  }
+
+  override onPointerDown() {
+    const { currentPagePoint } = this.editor.inputs
+    this.editor.createShape({
+      type: 'network-device',
+      x: currentPagePoint.x - 40,
+      y: currentPagePoint.y - 40,
+      props: {
+        deviceType: 'router',
+        w: 80,
+        h: 80,
+      },
+    })
+  }
+}
+
+class SwitchTool extends StateNode {
+  static override id = 'switch-tool'
+
+  override onEnter() {
+    this.editor.setCursor({ type: 'cross', rotation: 0 })
+  }
+
+  override onPointerDown() {
+    const { currentPagePoint } = this.editor.inputs
+    this.editor.createShape({
+      type: 'network-device',
+      x: currentPagePoint.x - 40,
+      y: currentPagePoint.y - 40,
+      props: {
+        deviceType: 'switch',
+        w: 80,
+        h: 80,
+      },
+    })
+  }
+}
+
+class FirewallTool extends StateNode {
+  static override id = 'firewall-tool'
+
+  override onEnter() {
+    this.editor.setCursor({ type: 'cross', rotation: 0 })
+  }
+
+  override onPointerDown() {
+    const { currentPagePoint } = this.editor.inputs
+    this.editor.createShape({
+      type: 'network-device',
+      x: currentPagePoint.x - 40,
+      y: currentPagePoint.y - 40,
+      props: {
+        deviceType: 'firewall',
+        w: 80,
+        h: 80,
+      },
+    })
+  }
+}
+
+class ServerTool extends StateNode {
+  static override id = 'server-tool'
+
+  override onEnter() {
+    this.editor.setCursor({ type: 'cross', rotation: 0 })
+  }
+
+  override onPointerDown() {
+    const { currentPagePoint } = this.editor.inputs
+    this.editor.createShape({
+      type: 'network-device',
+      x: currentPagePoint.x - 40,
+      y: currentPagePoint.y - 40,
+      props: {
+        deviceType: 'server',
+        w: 80,
+        h: 80,
+      },
+    })
+  }
+}
+
+class WirelessTool extends StateNode {
+  static override id = 'wireless-tool'
+
+  override onEnter() {
+    this.editor.setCursor({ type: 'cross', rotation: 0 })
+  }
+
+  override onPointerDown() {
+    const { currentPagePoint } = this.editor.inputs
+    this.editor.createShape({
+      type: 'network-device',
+      x: currentPagePoint.x - 40,
+      y: currentPagePoint.y - 40,
+      props: {
+        deviceType: 'wireless-controller',
+        w: 80,
+        h: 80,
+      },
+    })
+  }
+}
+
+// UI Overrides for adding tools to toolbar
+const uiOverrides: TLUiOverrides = {
+  tools(editor, tools) {
+    // Remove ALL unwanted tools - being very thorough
+    delete tools.geo
+    delete tools.draw
+    delete tools.note
+    delete tools.frame
+    delete tools.highlight
+    delete tools.asset
+    delete tools.embed
+    delete tools.eraser
+    delete tools.laser
+    delete tools.line
+    delete tools.fill
+    delete tools.opacity
+    delete tools.stroke
+    delete tools.dash
+    delete tools.size
+    
+    // Add network device tools with custom icons
+    tools['router-tool'] = {
+      id: 'router-tool',
+      icon: 'router-icon',
+      label: 'Router',
+      kbd: 'r',
+      onSelect: () => {
+        editor.setCurrentTool('router-tool')
+      },
+    }
+    tools['switch-tool'] = {
+      id: 'switch-tool',
+      icon: 'switch-icon',
+      label: 'Switch',
+      kbd: 'w',
+      onSelect: () => {
+        editor.setCurrentTool('switch-tool')
+      },
+    }
+    tools['firewall-tool'] = {
+      id: 'firewall-tool',
+      icon: 'firewall-icon',
+      label: 'Firewall',
+      kbd: 'f',
+      onSelect: () => {
+        editor.setCurrentTool('firewall-tool')
+      },
+    }
+    tools['server-tool'] = {
+      id: 'server-tool',
+      icon: 'server-icon',
+      label: 'Server',
+      kbd: 'v',
+      onSelect: () => {
+        editor.setCurrentTool('server-tool')
+      },
+    }
+    tools['wireless-tool'] = {
+      id: 'wireless-tool',
+      icon: 'wireless-icon',
+      label: 'Wireless',
+      kbd: 'q',
+      onSelect: () => {
+        editor.setCurrentTool('wireless-tool')
+      },
+    }
+    return tools
+  },
+  actions(editor, actions) {
+    // Remove ALL style-related actions
+    delete actions['toggle-style-panel']
+    delete actions['toggle-styles']
+    delete actions['open-style-panel']
+    delete actions['style-panel']
+    delete actions['styles']
+    return actions
+  },
+}
+
+// Custom Asset URLs for Azure-style network device icons
+const customAssetUrls: TLUiAssetUrlOverrides = {
+  icons: {
+    'router-icon': 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="routerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0078D4;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#106EBE;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect x="3" y="9" width="18" height="6" rx="1.5" fill="url(#routerGrad)" stroke="#005A9E" stroke-width="0.5"/>
+        <circle cx="6" cy="12" r="1" fill="#FFFFFF"/>
+        <circle cx="9" cy="12" r="1" fill="#FFFFFF"/>
+        <circle cx="12" cy="12" r="1" fill="#FFFFFF"/>
+        <circle cx="15" cy="12" r="1" fill="#FFFFFF"/>
+        <circle cx="18" cy="12" r="1" fill="#FFFFFF"/>
+        <rect x="19.5" y="10.5" width="1.5" height="3" fill="#FFFFFF"/>
+        <path d="M10.5 6 L12 4.5 L13.5 6" stroke="#0078D4" stroke-width="1.2" fill="none"/>
+        <path d="M10.5 18 L12 19.5 L13.5 18" stroke="#0078D4" stroke-width="1.2" fill="none"/>
+      </svg>
+    `),
+    'switch-icon': 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="switchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00BCF2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0099BC;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect x="1.5" y="7.5" width="21" height="9" rx="1.5" fill="url(#switchGrad)" stroke="#0078D4" stroke-width="0.5"/>
+        <rect x="3" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="5.25" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="7.5" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="9.75" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="12" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="14.25" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="16.5" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <rect x="18.75" y="9" width="1.5" height="6" fill="#FFFFFF" rx="0.3"/>
+        <circle cx="12" cy="4.5" r="1.5" fill="#00BCF2"/>
+        <path d="M9 4.5 L15 4.5" stroke="#00BCF2" stroke-width="1.2"/>
+        <path d="M12 6 L12 7.5" stroke="#00BCF2" stroke-width="1.2"/>
+      </svg>
+    `),
+    'firewall-icon': 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="firewallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FF8C00;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#D83B01;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M12 3 L18 6 L18 13.5 C18 16.5 15 19.5 12 21 C9 19.5 6 16.5 6 13.5 L6 6 Z" fill="url(#firewallGrad)" stroke="#C0392B" stroke-width="0.5"/>
+        <path d="M12 6 L15 7.5 L15 12 C15 13.875 13.5 15.75 12 16.5 C10.5 15.75 9 13.875 9 12 L9 7.5 Z" fill="#FFFFFF"/>
+        <circle cx="12" cy="10.5" r="1.5" fill="#D83B01"/>
+        <rect x="11.25" y="12" width="1.5" height="2.25" fill="#D83B01"/>
+      </svg>
+    `),
+    'server-icon': 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="serverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#68217A;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#5C2E91;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect x="4.5" y="4.5" width="15" height="4.5" rx="0.75" fill="url(#serverGrad)" stroke="#4A1A5C" stroke-width="0.5"/>
+        <rect x="4.5" y="9.75" width="15" height="4.5" rx="0.75" fill="url(#serverGrad)" stroke="#4A1A5C" stroke-width="0.5"/>
+        <rect x="4.5" y="15" width="15" height="4.5" rx="0.75" fill="url(#serverGrad)" stroke="#4A1A5C" stroke-width="0.5"/>
+        <circle cx="6.75" cy="6.75" r="0.75" fill="#FFFFFF"/>
+        <circle cx="9" cy="6.75" r="0.75" fill="#FFFFFF"/>
+        <circle cx="6.75" cy="12" r="0.75" fill="#FFFFFF"/>
+        <circle cx="9" cy="12" r="0.75" fill="#FFFFFF"/>
+        <circle cx="6.75" cy="17.25" r="0.75" fill="#FFFFFF"/>
+        <circle cx="9" cy="17.25" r="0.75" fill="#FFFFFF"/>
+        <rect x="12" y="6" width="6" height="1.5" rx="0.375" fill="#FFFFFF"/>
+        <rect x="12" y="11.25" width="6" height="1.5" rx="0.375" fill="#FFFFFF"/>
+        <rect x="12" y="16.5" width="6" height="1.5" rx="0.375" fill="#FFFFFF"/>
+      </svg>
+    `),
+    'wireless-icon': 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="wirelessGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00BCF2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0078D4;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect x="9" y="15" width="6" height="4.5" rx="0.75" fill="url(#wirelessGrad)" stroke="#005A9E" stroke-width="0.5"/>
+        <circle cx="10.5" cy="17.25" r="0.6" fill="#FFFFFF"/>
+        <circle cx="13.5" cy="17.25" r="0.6" fill="#FFFFFF"/>
+        <rect x="11.25" y="13.5" width="1.5" height="1.5" fill="#00BCF2"/>
+        <path d="M6 9 C6 6 8.4 3 12 3 C15.6 3 18 6 18 9" stroke="#0078D4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M8.25 11.25 C8.25 9.15 9.9 7.5 12 7.5 C14.1 7.5 15.75 9.15 15.75 11.25" stroke="#00BCF2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M10.125 13.125 C10.125 12.075 10.95 11.25 12 11.25 C13.05 11.25 13.875 12.075 13.875 13.125" stroke="#40E0D0" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+    `),
+  },
+}
+
+// Custom Components for toolbar
+const components: TLComponents = {
+  Toolbar: (props) => {
+    const tools = useTools()
+    const isRouterSelected = useIsToolSelected(tools['router-tool'])
+    const isSwitchSelected = useIsToolSelected(tools['switch-tool'])
+    const isFirewallSelected = useIsToolSelected(tools['firewall-tool'])
+    const isServerSelected = useIsToolSelected(tools['server-tool'])
+    const isWirelessSelected = useIsToolSelected(tools['wireless-tool'])
+    
+    return (
+      <DefaultToolbar {...props}>
+        <TldrawUiMenuItem {...tools['router-tool']} isSelected={isRouterSelected} />
+        <TldrawUiMenuItem {...tools['switch-tool']} isSelected={isSwitchSelected} />
+        <TldrawUiMenuItem {...tools['firewall-tool']} isSelected={isFirewallSelected} />
+        <TldrawUiMenuItem {...tools['server-tool']} isSelected={isServerSelected} />
+        <TldrawUiMenuItem {...tools['wireless-tool']} isSelected={isWirelessSelected} />
+        <DefaultToolbarContent />
+      </DefaultToolbar>
+    )
+  },
+  StylePanel: () => null,
+  ActionsMenu: () => null,
+  KeyboardShortcutsDialog: (props) => {
+    const tools = useTools()
+    return (
+      <DefaultKeyboardShortcutsDialog {...props}>
+        <DefaultKeyboardShortcutsDialogContent />
+        <TldrawUiMenuItem {...tools['router-tool']} />
+        <TldrawUiMenuItem {...tools['switch-tool']} />
+        <TldrawUiMenuItem {...tools['firewall-tool']} />
+        <TldrawUiMenuItem {...tools['server-tool']} />
+        <TldrawUiMenuItem {...tools['wireless-tool']} />
+      </DefaultKeyboardShortcutsDialog>
+    )
+  },
+}
 
 const useStyles = makeStyles({
   container: {
@@ -410,6 +850,46 @@ export default function DesignEditor() {
   const [designTarget, setDesignTarget] = useState<string>('wan')
   const [designPrompt, setDesignPrompt] = useState('')
 
+  const [activeDevice, setActiveDevice] = useState<string | null>(null)
+  const [editor, setEditor] = useState<any>(null)
+
+  // Custom shape utils and tools
+  const customShapeUtils = [NetworkDeviceShapeUtil]
+  const customTools = [RouterTool, SwitchTool, FirewallTool, ServerTool, WirelessTool]
+
+  // Function to create network device on canvas
+  const createNetworkDevice = (deviceType: NetworkDeviceType) => {
+    console.log('Creating network device:', deviceType)
+    console.log('Editor available:', !!editor)
+    
+    if (!editor) {
+      console.error('Editor not available yet')
+      return
+    }
+    
+    try {
+      const centerX = 400
+      const centerY = 300
+      
+      const shape = {
+        type: 'network-device' as const,
+        x: centerX - 40,
+        y: centerY - 40,
+        props: {
+          deviceType: deviceType as string,
+          w: 80,
+          h: 80,
+        },
+      }
+      
+      console.log('Creating network device shape:', shape)
+      editor.createShape(shape)
+      console.log('Network device shape created successfully')
+    } catch (error) {
+      console.error('Error creating network device shape:', error)
+    }
+  }
+
   const getHierarchyIcon = (type: string) => {
     switch (type) {
       case 'building': return <BuildingMultiple24Regular />
@@ -761,26 +1241,37 @@ connections:
             </Body2>
           </div>
           <div className={styles.canvasToolbarRight}>
-            <Button size="small" appearance="subtle" icon={<Cursor24Regular />} title="Pan" />
-            <Button size="small" appearance="subtle" icon={<Add24Regular />} title="Add Device" />
-            <Divider vertical />
-            <Button size="small" appearance="subtle" icon={<ZoomOut24Regular />} title="Zoom Out" />
-            <Button size="small" appearance="subtle" icon={<ZoomFit24Regular />} title="Zoom to Fit" />
-            <Button size="small" appearance="subtle" icon={<ZoomIn24Regular />} title="Zoom In" />
-            <Divider vertical />
             <Button size="small" appearance="subtle" icon={<Save24Regular />} title="Save" />
             <Button size="small" appearance="subtle" icon={<CheckmarkCircle24Regular />} title="Validate" />
             <Button size="small" appearance="subtle" icon={<Send24Regular />} title="Submit" />
           </div>
         </div>
         <div className={styles.canvasViewport}>
-          {/* Render connections as SVG */}
-          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-            {canvasConnections.map(connection => renderCanvasConnection(connection, canvasDevices))}
-          </svg>
-          
-          {/* Render devices */}
-          {canvasDevices.map(device => renderCanvasDevice(device))}
+          <Tldraw 
+            shapeUtils={customShapeUtils}
+            tools={customTools}
+            overrides={uiOverrides}
+            components={components}
+            assetUrls={customAssetUrls}
+            onMount={(editor) => {
+              console.log('Tldraw mounted, editor:', editor)
+              setEditor(editor)
+              // Center the view
+              editor.zoomToFit()
+              
+              // Create a test network device shape
+              editor.createShape({ 
+                type: 'network-device', 
+                x: 100, 
+                y: 100,
+                props: {
+                  deviceType: 'router',
+                  w: 80,
+                  h: 80,
+                }
+              })
+            }}
+          />
         </div>
       </div>
 
