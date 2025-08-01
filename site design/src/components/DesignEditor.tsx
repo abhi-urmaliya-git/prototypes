@@ -44,6 +44,9 @@ import {
   BotSparkle24Regular,
   CheckmarkCircle24Regular,
   Send24Regular,
+  Warning24Regular,
+  ErrorCircle24Regular,
+  Dismiss24Regular,
 } from '@fluentui/react-icons'
 import { Tldraw, ShapeUtil, TLBaseShape, RecordProps, T, Rectangle2d, HTMLContainer, Geometry2d, TLResizeInfo, resizeBox, StateNode, DefaultToolbar, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, TLComponents, TLUiOverrides, TldrawUiMenuItem, useIsToolSelected, useTools, TLUiAssetUrlOverrides } from 'tldraw'
 import 'tldraw/tldraw.css'
@@ -671,6 +674,76 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     border: `1px solid ${tokens.colorNeutralStroke2}`,
   },
+  validationOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '350px',
+    height: '100%',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    boxShadow: tokens.shadow16,
+    zIndex: 1000,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  validationHeader: {
+    ...shorthands.padding('16px'),
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  validationContent: {
+    flex: 1,
+    overflow: 'auto',
+    ...shorthands.padding('16px'),
+  },
+  validationRule: {
+    ...shorthands.padding('12px'),
+    borderRadius: tokens.borderRadiusSmall,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '8px',
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  validationRulePassed: {
+    ...shorthands.border('1px', 'solid', '#107c10'),
+    backgroundColor: '#f3f9f3',
+  },
+  validationRuleFailed: {
+    ...shorthands.border('1px', 'solid', '#d13438'),
+    backgroundColor: '#fdf3f4',
+  },
+  validationRuleWarning: {
+    ...shorthands.border('1px', 'solid', '#ff8c00'),
+    backgroundColor: '#fffdf3',
+  },
+  validationRuleHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    ...shorthands.gap('8px'),
+    marginBottom: '4px',
+  },
+  validationRuleTitle: {
+    fontWeight: '600',
+    fontSize: '14px',
+  },
+  validationRuleMessage: {
+    fontSize: '13px',
+    color: tokens.colorNeutralForeground2,
+    marginBottom: '4px',
+  },
+  validationRuleDetails: {
+    fontSize: '12px',
+    color: tokens.colorNeutralForeground3,
+  },
+  validationSummary: {
+    ...shorthands.padding('12px'),
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: tokens.borderRadiusSmall,
+    marginBottom: '16px',
+  },
 })
 
 interface HierarchyNode {
@@ -776,6 +849,75 @@ const mockDesignData = {
   ]
 }
 
+// Mock validation rules
+interface ValidationRule {
+  id: string
+  category: string
+  rule: string
+  status: 'passed' | 'failed' | 'warning'
+  message: string
+  details?: string
+}
+
+const mockValidationRules: ValidationRule[] = [
+  {
+    id: 'rule1',
+    category: 'Connectivity',
+    rule: 'All devices must be connected',
+    status: 'passed',
+    message: 'All network devices are properly connected',
+    details: '3 devices, 2 connections verified'
+  },
+  {
+    id: 'rule2',
+    category: 'Redundancy',
+    rule: 'Core switches must have redundant connections',
+    status: 'failed',
+    message: 'Core switch lacks redundant uplinks',
+    details: 'Core Switch 01 only has 1 uplink connection'
+  },
+  {
+    id: 'rule3',
+    category: 'Security',
+    rule: 'Firewall must be positioned correctly',
+    status: 'passed',
+    message: 'Firewall is properly positioned in network path',
+    details: 'Firewall 01 is between router and internal network'
+  },
+  {
+    id: 'rule4',
+    category: 'Performance',
+    rule: 'Link speeds must be consistent',
+    status: 'warning',
+    message: 'Bandwidth bottleneck detected',
+    details: 'Router-Firewall link (1Gbps) is slower than Switch-Router link (10Gbps)'
+  },
+  {
+    id: 'rule5',
+    category: 'Standards',
+    rule: 'Device naming convention compliance',
+    status: 'passed',
+    message: 'All devices follow naming standards',
+    details: 'Device names match corporate naming convention'
+  },
+  {
+    id: 'rule6',
+    category: 'Capacity',
+    rule: 'Port utilization within limits',
+    status: 'passed',
+    message: 'Port usage is within acceptable limits',
+    details: 'All devices have available ports for future expansion'
+  },
+  {
+    id: 'rule7',
+    category: 'Topology',
+    rule: 'No single points of failure',
+    status: 'failed',
+    message: 'Single points of failure detected',
+    details: 'Router 01 is a single point of failure for network connectivity'
+  }
+]
+
 export default function DesignEditor() {
   const styles = useStyles()
   const [leftTab, setLeftTab] = useState('generate')
@@ -784,6 +926,7 @@ export default function DesignEditor() {
   // Generate tab state
   const [designTarget, setDesignTarget] = useState<string>('wan')
   const [designPrompt, setDesignPrompt] = useState('')
+  const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false)
 
   const [, setEditor] = useState<any>(null)
 
@@ -811,6 +954,79 @@ export default function DesignEditor() {
       case 'wireless-controller': return <Router24Regular className={styles.deviceIcon} />
       default: return <Circle16Regular />
     }
+  }
+
+  const getValidationIcon = (status: string) => {
+    switch (status) {
+      case 'passed': return <CheckmarkCircle24Regular style={{ color: '#107c10' }} />
+      case 'failed': return <ErrorCircle24Regular style={{ color: '#d13438' }} />
+      case 'warning': return <Warning24Regular style={{ color: '#ff8c00' }} />
+      default: return <Circle16Regular />
+    }
+  }
+
+  const handleValidateClick = () => {
+    setIsValidationPanelOpen(true)
+  }
+
+  const renderValidationPanel = () => {
+    if (!isValidationPanelOpen) return null
+
+    const passedRules = mockValidationRules.filter(rule => rule.status === 'passed').length
+    const failedRules = mockValidationRules.filter(rule => rule.status === 'failed').length
+    const warningRules = mockValidationRules.filter(rule => rule.status === 'warning').length
+    const totalRules = mockValidationRules.length
+
+    return (
+      <div className={styles.validationOverlay}>
+        <div className={styles.validationHeader}>
+          <Title3>Design Validation</Title3>
+          <Button 
+            appearance="subtle" 
+            icon={<Dismiss24Regular />} 
+            onClick={() => setIsValidationPanelOpen(false)}
+            size="small"
+          />
+        </div>
+        <div className={styles.validationContent}>
+          <div className={styles.validationSummary}>
+            <Title3 style={{ marginBottom: '8px' }}>Validation Summary</Title3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Body2>Total Rules: {totalRules}</Body2>
+              <Body2 style={{ color: '#107c10' }}>✓ Passed: {passedRules}</Body2>
+              <Body2 style={{ color: '#d13438' }}>✗ Failed: {failedRules}</Body2>
+              <Body2 style={{ color: '#ff8c00' }}>⚠ Warnings: {warningRules}</Body2>
+            </div>
+          </div>
+
+          {mockValidationRules.map((rule) => {
+            const ruleStyle = rule.status === 'passed' ? styles.validationRulePassed :
+                             rule.status === 'failed' ? styles.validationRuleFailed :
+                             styles.validationRuleWarning
+
+            return (
+              <div key={rule.id} className={`${styles.validationRule} ${ruleStyle}`}>
+                <div className={styles.validationRuleHeader}>
+                  {getValidationIcon(rule.status)}
+                  <div className={styles.validationRuleTitle}>{rule.rule}</div>
+                </div>
+                <Badge 
+                  appearance="outline" 
+                  size="small" 
+                  style={{ marginBottom: '4px' }}
+                >
+                  {rule.category}
+                </Badge>
+                <div className={styles.validationRuleMessage}>{rule.message}</div>
+                {rule.details && (
+                  <div className={styles.validationRuleDetails}>{rule.details}</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
   }
 
   const renderTreeNode = (node: HierarchyNode, level: number = 0): JSX.Element => {
@@ -1076,11 +1292,18 @@ connections:
           </div>
           <div className={styles.canvasToolbarRight}>
             <Button size="small" appearance="subtle" icon={<Save24Regular />} title="Save" />
-            <Button size="small" appearance="subtle" icon={<CheckmarkCircle24Regular />} title="Validate" />
+            <Button 
+              size="small" 
+              appearance="subtle" 
+              icon={<CheckmarkCircle24Regular />} 
+              title="Validate" 
+              onClick={handleValidateClick}
+            />
             <Button size="small" appearance="subtle" icon={<Send24Regular />} title="Submit" />
           </div>
         </div>
         <div className={styles.canvasViewport}>
+          {renderValidationPanel()}
           <Tldraw 
             shapeUtils={customShapeUtils}
             tools={customTools}
