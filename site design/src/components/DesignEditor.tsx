@@ -723,6 +723,24 @@ interface BomItem {
   comments: string
 }
 
+// Cable Map interface
+interface CableMapItem {
+  id: string
+  connectionNotes: string
+  sourceDevice: string
+  sourcePort: string
+  sourcePortSpeed: string
+  sourceBreakout: string
+  sourceLocation: string
+  destinationDevice: string
+  destinationPort: string
+  destinationPortSpeed: string
+  destinationLocation: string
+  duplicateRoute: string
+  media: string
+  options: string
+}
+
 const mockValidationRules: ValidationRule[] = [
   {
     id: 'rule1',
@@ -796,6 +814,9 @@ export default function DesignEditor() {
   // BOM drawer state
   const [isBomDrawerOpen, setIsBomDrawerOpen] = useState(false)
   const [bomValidationErrors, setBomValidationErrors] = useState<string[]>([])
+  // Cable Map drawer state
+  const [isCableMapDrawerOpen, setIsCableMapDrawerOpen] = useState(false)
+  const [cableMapValidationErrors, setCableMapValidationErrors] = useState<string[]>([])
   const [bomData, setBomData] = useState<BomItem[]>([
     { 
       id: '1', 
@@ -841,6 +862,90 @@ export default function DesignEditor() {
       unitPrice: 850.00, 
       totalCost: 850.00, 
       comments: 'Equipment mounting rack' 
+    }
+  ])
+
+  // Cable Map data
+  const [cableMapData, setCableMapData] = useState<CableMapItem[]>([
+    {
+      id: '1',
+      connectionNotes: 'wired router uplink connected to Switch cusbgudca301 > cusbgudca301',
+      sourceDevice: 'cusbgudca301',
+      sourcePort: 'Te0/0/4',
+      sourcePortSpeed: '10G',
+      sourceBreakout: 'No',
+      sourceLocation: '#N/A',
+      destinationDevice: 'cusbgudca301',
+      destinationPort: 'Te1/1/1',
+      destinationPortSpeed: '10G',
+      destinationLocation: '#N/A',
+      duplicateRoute: 'Connection Ok',
+      media: 'SFP+',
+      options: 'SFP+'
+    },
+    {
+      id: '2',
+      connectionNotes: 'wired router uplink connected to Switch cusbgudca301 > cusbgudca301',
+      sourceDevice: 'cusbgudca301',
+      sourcePort: 'Te0/0/5',
+      sourcePortSpeed: '10G',
+      sourceBreakout: 'No',
+      sourceLocation: '#N/A',
+      destinationDevice: 'cusbgudca301',
+      destinationPort: 'Te1/1/2',
+      destinationPortSpeed: '10G',
+      destinationLocation: '#N/A',
+      duplicateRoute: 'Connection Ok',
+      media: 'SFP+',
+      options: 'SFP+'
+    },
+    {
+      id: '3',
+      connectionNotes: 'wired router uplink connected to Switch cusbgudca301 > cusbgudca303',
+      sourceDevice: 'cusbgudca301',
+      sourcePort: 'Te0/0/6',
+      sourcePortSpeed: '10G',
+      sourceBreakout: 'No',
+      sourceLocation: '#N/A',
+      destinationDevice: 'cusbgudca303',
+      destinationPort: 'Te1/1/1',
+      destinationPortSpeed: '10G',
+      destinationLocation: '#N/A',
+      duplicateRoute: 'Connection Ok',
+      media: 'SFP+',
+      options: 'SFP+'
+    },
+    {
+      id: '4',
+      connectionNotes: 'wired router uplink connected to Switch cusbgudca301 > cusbgudca303',
+      sourceDevice: 'cusbgudca301',
+      sourcePort: 'Te0/0/7',
+      sourcePortSpeed: '10G',
+      sourceBreakout: 'No',
+      sourceLocation: '#N/A',
+      destinationDevice: 'cusbgudca303',
+      destinationPort: 'Te1/1/2',
+      destinationPortSpeed: '10G',
+      destinationLocation: '#N/A',
+      duplicateRoute: 'Connection Ok',
+      media: 'SFP+',
+      options: 'SFP+'
+    },
+    {
+      id: '5',
+      connectionNotes: 'wired router uplink connected to Router cusbgudca301 > cusbgudca302',
+      sourceDevice: 'cusbgudca302',
+      sourcePort: 'Te0/0/2',
+      sourcePortSpeed: '10G',
+      sourceBreakout: 'No',
+      sourceLocation: '#N/A',
+      destinationDevice: 'cusbgudca302',
+      destinationPort: 'Te0/0/2',
+      destinationPortSpeed: '10G',
+      destinationLocation: '#N/A',
+      duplicateRoute: 'Connection Ok',
+      media: 'SFP+',
+      options: 'SFP+'
     }
   ])
 
@@ -1347,7 +1452,12 @@ connections:
             >
               BOM
             </Button>
-            <Button appearance="outline" icon={<Map24Regular />} size="small">
+            <Button 
+              appearance="outline" 
+              icon={<Map24Regular />} 
+              size="small"
+              onClick={() => setIsCableMapDrawerOpen(true)}
+            >
               Cable Map
             </Button>
             <Button appearance="outline" icon={<Checkmark24Regular />} size="small">
@@ -1580,10 +1690,388 @@ connections:
           </Button>
           <Button 
             appearance="primary"
+            disabled={bomValidationErrors.length > 0}
             onClick={() => {
               // Save BOM data and clear validation errors
               setBomValidationErrors([])
               console.log('Saving BOM data...', bomData)
+            }}
+          >
+            Save
+          </Button>
+        </DrawerFooter>
+      </OverlayDrawer>
+
+      {/* Cable Map Drawer */}
+      <OverlayDrawer
+        open={isCableMapDrawerOpen}
+        onOpenChange={(_, { open }) => setIsCableMapDrawerOpen(open)}
+        position="end"
+        size="large"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
+              <Button
+                appearance="subtle"
+                aria-label="Close"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsCableMapDrawerOpen(false)}
+              />
+            }
+          >
+            Ethernet Links for IP Network Devices
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <Table size="small">
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '200px'
+                    }}>
+                      Connection Notes
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '120px'
+                    }}>
+                      Source Device
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '100px'
+                    }}>
+                      Source Port
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '80px'
+                    }}>
+                      Port Speed
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '100px'
+                    }}>
+                      Breakout/Populated
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '120px'
+                    }}>
+                      Source Device Location
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '120px'
+                    }}>
+                      Destination Device
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '100px'
+                    }}>
+                      Destination Port
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '80px'
+                    }}>
+                      Destination Port Speed
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '120px'
+                    }}>
+                      Destination Device Location
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '100px'
+                    }}>
+                      Duplicate Route
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '80px'
+                    }}>
+                      Media
+                    </TableHeaderCell>
+                    <TableHeaderCell style={{ 
+                      textAlign: 'left', 
+                      fontWeight: '600', 
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
+                      padding: '12px 8px',
+                      minWidth: '80px'
+                    }}>
+                      Options
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cableMapData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.connectionNotes}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, connectionNotes: data.value } : row
+                            ))
+                          }}
+                          style={{ 
+                            border: cableMapValidationErrors.includes(`notes-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.sourceDevice}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, sourceDevice: data.value } : row
+                            ))
+                          }}
+                          style={{ 
+                            border: cableMapValidationErrors.includes(`source-device-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.sourcePort}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, sourcePort: data.value } : row
+                            ))
+                          }}
+                          style={{ 
+                            border: cableMapValidationErrors.includes(`source-port-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.sourcePortSpeed}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, sourcePortSpeed: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.sourceBreakout}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, sourceBreakout: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.sourceLocation}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, sourceLocation: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.destinationDevice}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, destinationDevice: data.value } : row
+                            ))
+                          }}
+                          style={{ 
+                            border: cableMapValidationErrors.includes(`dest-device-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.destinationPort}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, destinationPort: data.value } : row
+                            ))
+                          }}
+                          style={{ 
+                            border: cableMapValidationErrors.includes(`dest-port-${item.id}`) ? '2px solid #d13438' : 'none', 
+                            background: 'transparent', 
+                            width: '100%',
+                            textAlign: 'left'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.destinationPortSpeed}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, destinationPortSpeed: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.destinationLocation}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, destinationLocation: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <div style={{ padding: '8px', textAlign: 'left', color: '#107c10', fontWeight: '500' }}>
+                          {item.duplicateRoute}
+                        </div>
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.media}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, media: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                      <TableCell style={{ padding: '8px', textAlign: 'left' }}>
+                        <Input
+                          value={item.options}
+                          onChange={(_, data) => {
+                            setCableMapData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, options: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%', textAlign: 'left' }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </DrawerBody>
+
+        <DrawerFooter>
+          <Button 
+            appearance="secondary"
+            onClick={() => {
+              // Validate Cable Map data - highlight random cells with errors
+              const errors: string[] = []
+              
+              // Randomly select some fields to mark as invalid
+              const sourceDeviceErrors = ['1', '3'] // Random item IDs
+              sourceDeviceErrors.forEach(id => {
+                if (cableMapData.find(item => item.id === id)) {
+                  errors.push(`source-device-${id}`)
+                }
+              })
+              
+              // Randomly select some port fields to mark as invalid
+              const portErrors = ['2', '4'] // Random item IDs
+              portErrors.forEach(id => {
+                if (cableMapData.find(item => item.id === id)) {
+                  errors.push(`source-port-${id}`)
+                  errors.push(`dest-port-${id}`)
+                }
+              })
+              
+              setCableMapValidationErrors(errors)
+              console.log('Cable Map Validation completed. Found errors in:', errors)
+            }}
+          >
+            Validate
+          </Button>
+          <Button 
+            appearance="primary"
+            disabled={cableMapValidationErrors.length > 0}
+            onClick={() => {
+              // Save Cable Map data and clear validation errors
+              setCableMapValidationErrors([])
+              console.log('Saving Cable Map data...', cableMapData)
             }}
           >
             Save
