@@ -33,6 +33,9 @@ import {
   DrawerFooter,
   OverlayDrawer,
   InlineDrawer,
+  DataGrid,
+  Input,
+  createTableColumn,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -711,6 +714,17 @@ interface ValidationRule {
   details?: string
 }
 
+// BOM interface
+interface BomItem {
+  id: string
+  modelNumber: string
+  itemDescription: string
+  qty: number
+  unitPrice: number
+  totalCost: number
+  comments: string
+}
+
 const mockValidationRules: ValidationRule[] = [
   {
     id: 'rule1',
@@ -781,6 +795,55 @@ export default function DesignEditor() {
   const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false)
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(true)
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState(true)
+  // BOM drawer state
+  const [isBomDrawerOpen, setIsBomDrawerOpen] = useState(false)
+  const [bomData, setBomData] = useState<BomItem[]>([
+    { 
+      id: '1', 
+      modelNumber: 'CAT3750-12T-S', 
+      itemDescription: 'Catalyst 3750 12-Port Switch', 
+      qty: 2, 
+      unitPrice: 1250.00, 
+      totalCost: 2500.00, 
+      comments: 'Core networking equipment' 
+    },
+    { 
+      id: '2', 
+      modelNumber: 'ASR1001-X', 
+      itemDescription: 'ASR 1001-X Router', 
+      qty: 1, 
+      unitPrice: 8500.00, 
+      totalCost: 8500.00, 
+      comments: 'Edge router for WAN connectivity' 
+    },
+    { 
+      id: '3', 
+      modelNumber: 'ASA5516-K9', 
+      itemDescription: 'ASA 5516-X Firewall', 
+      qty: 1, 
+      unitPrice: 3200.00, 
+      totalCost: 3200.00, 
+      comments: 'Security appliance' 
+    },
+    { 
+      id: '4', 
+      modelNumber: 'CAB-AC-2500W-US', 
+      itemDescription: 'Power Cable 2500W US', 
+      qty: 4, 
+      unitPrice: 75.00, 
+      totalCost: 300.00, 
+      comments: 'Power cables for equipment' 
+    },
+    { 
+      id: '5', 
+      modelNumber: 'RACK-42U-STD', 
+      itemDescription: 'Standard 42U Server Rack', 
+      qty: 1, 
+      unitPrice: 850.00, 
+      totalCost: 850.00, 
+      comments: 'Equipment mounting rack' 
+    }
+  ])
 
   const [, setEditor] = useState<any>(null)
 
@@ -1277,7 +1340,12 @@ connections:
         </DrawerBody>
         <DrawerFooter>
           <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-            <Button appearance="outline" icon={<DocumentTable24Regular />} size="small">
+            <Button 
+              appearance="outline" 
+              icon={<DocumentTable24Regular />} 
+              size="small"
+              onClick={() => setIsBomDrawerOpen(true)}
+            >
               BOM
             </Button>
             <Button appearance="outline" icon={<Map24Regular />} size="small">
@@ -1289,6 +1357,180 @@ connections:
           </div>
         </DrawerFooter>
       </InlineDrawer>
+
+      {/* BOM Drawer */}
+      <OverlayDrawer
+        open={isBomDrawerOpen}
+        onOpenChange={(_, { open }) => setIsBomDrawerOpen(open)}
+        position="end"
+        size="large"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
+              <Button
+                appearance="subtle"
+                aria-label="Close"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsBomDrawerOpen(false)}
+              />
+            }
+          >
+            Bill of Materials
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <DataGrid
+              items={bomData}
+              columns={[
+                createTableColumn<BomItem>({
+                  columnId: 'modelNumber',
+                  compare: (a, b) => a.modelNumber.localeCompare(b.modelNumber),
+                  renderHeaderCell: () => 'Model Number',
+                  renderCell: (item) => (
+                    <Input
+                      value={item.modelNumber}
+                      onChange={(_, data) => {
+                        setBomData(prev => prev.map(row => 
+                          row.id === item.id ? { ...row, modelNumber: data.value } : row
+                        ))
+                      }}
+                      style={{ border: 'none', background: 'transparent' }}
+                    />
+                  ),
+                }),
+                createTableColumn<BomItem>({
+                  columnId: 'itemDescription',
+                  compare: (a, b) => a.itemDescription.localeCompare(b.itemDescription),
+                  renderHeaderCell: () => 'Item Description',
+                  renderCell: (item) => (
+                    <Input
+                      value={item.itemDescription}
+                      onChange={(_, data) => {
+                        setBomData(prev => prev.map(row => 
+                          row.id === item.id ? { ...row, itemDescription: data.value } : row
+                        ))
+                      }}
+                      style={{ border: 'none', background: 'transparent', width: '100%' }}
+                    />
+                  ),
+                }),
+                createTableColumn<BomItem>({
+                  columnId: 'qty',
+                  compare: (a, b) => a.qty - b.qty,
+                  renderHeaderCell: () => 'Qty',
+                  renderCell: (item) => (
+                    <Input
+                      type="number"
+                      value={item.qty.toString()}
+                      onChange={(_, data) => {
+                        const qty = parseInt(data.value) || 0
+                        setBomData(prev => prev.map(row => 
+                          row.id === item.id ? { 
+                            ...row, 
+                            qty, 
+                            totalCost: qty * row.unitPrice 
+                          } : row
+                        ))
+                      }}
+                      style={{ border: 'none', background: 'transparent', width: '80px' }}
+                    />
+                  ),
+                }),
+                createTableColumn<BomItem>({
+                  columnId: 'unitPrice',
+                  compare: (a, b) => a.unitPrice - b.unitPrice,
+                  renderHeaderCell: () => 'Unit Price',
+                  renderCell: (item) => (
+                    <Input
+                      type="number"
+                      value={item.unitPrice.toFixed(2)}
+                      onChange={(_, data) => {
+                        const unitPrice = parseFloat(data.value) || 0
+                        setBomData(prev => prev.map(row => 
+                          row.id === item.id ? { 
+                            ...row, 
+                            unitPrice, 
+                            totalCost: row.qty * unitPrice 
+                          } : row
+                        ))
+                      }}
+                      style={{ border: 'none', background: 'transparent', width: '120px' }}
+                    />
+                  ),
+                }),
+                createTableColumn<BomItem>({
+                  columnId: 'totalCost',
+                  compare: (a, b) => a.totalCost - b.totalCost,
+                  renderHeaderCell: () => 'Total Cost',
+                  renderCell: (item) => (
+                    <div style={{ padding: '8px', fontWeight: '600' }}>
+                      ${item.totalCost.toFixed(2)}
+                    </div>
+                  ),
+                }),
+                createTableColumn<BomItem>({
+                  columnId: 'comments',
+                  compare: (a, b) => a.comments.localeCompare(b.comments),
+                  renderHeaderCell: () => 'Comments',
+                  renderCell: (item) => (
+                    <Input
+                      value={item.comments}
+                      onChange={(_, data) => {
+                        setBomData(prev => prev.map(row => 
+                          row.id === item.id ? { ...row, comments: data.value } : row
+                        ))
+                      }}
+                      style={{ border: 'none', background: 'transparent', width: '100%' }}
+                    />
+                  ),
+                }),
+              ]}
+              sortable
+              selectionMode="multiselect"
+              style={{ flex: 1 }}
+            />
+            
+            <div style={{ 
+              marginTop: '16px', 
+              padding: '16px', 
+              borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+              backgroundColor: tokens.colorNeutralBackground2,
+              borderRadius: tokens.borderRadiusMedium
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Body1 style={{ fontWeight: '600' }}>Total Project Cost:</Body1>
+                <Title3 style={{ color: tokens.colorBrandForeground1 }}>
+                  ${bomData.reduce((sum, item) => sum + item.totalCost, 0).toFixed(2)}
+                </Title3>
+              </div>
+            </div>
+          </div>
+        </DrawerBody>
+
+        <DrawerFooter>
+          <Button 
+            appearance="secondary"
+            onClick={() => {
+              // Validate BOM data
+              console.log('Validating BOM data...')
+            }}
+          >
+            Validate
+          </Button>
+          <Button 
+            appearance="primary"
+            onClick={() => {
+              // Save BOM data
+              console.log('Saving BOM data...', bomData)
+            }}
+          >
+            Save
+          </Button>
+        </DrawerFooter>
+      </OverlayDrawer>
     </div>
   )
 }
