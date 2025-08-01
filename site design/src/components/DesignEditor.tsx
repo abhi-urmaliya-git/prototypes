@@ -1708,6 +1708,7 @@ connections:
         onOpenChange={(_, { open }) => setIsCableMapDrawerOpen(open)}
         position="end"
         size="large"
+        style={{ width: '95vw', maxWidth: '95vw' }}
       >
         <DrawerHeader>
           <DrawerHeaderTitle
@@ -1726,8 +1727,8 @@ connections:
 
         <DrawerBody>
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, overflow: 'auto' }}>
-              <Table size="small">
+            <div style={{ flex: 1, overflow: 'auto', overflowX: 'auto' }}>
+              <Table size="small" style={{ minWidth: '1400px' }}>
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell style={{ 
@@ -1736,7 +1737,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '200px'
+                      minWidth: '250px'
                     }}>
                       Connection Notes
                     </TableHeaderCell>
@@ -1746,7 +1747,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '120px'
+                      minWidth: '140px'
                     }}>
                       Source Device
                     </TableHeaderCell>
@@ -1756,7 +1757,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '100px'
+                      minWidth: '110px'
                     }}>
                       Source Port
                     </TableHeaderCell>
@@ -1766,7 +1767,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '80px'
+                      minWidth: '90px'
                     }}>
                       Port Speed
                     </TableHeaderCell>
@@ -1776,7 +1777,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '100px'
+                      minWidth: '120px'
                     }}>
                       Breakout/Populated
                     </TableHeaderCell>
@@ -1786,7 +1787,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '120px'
+                      minWidth: '140px'
                     }}>
                       Source Device Location
                     </TableHeaderCell>
@@ -1796,7 +1797,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '120px'
+                      minWidth: '140px'
                     }}>
                       Destination Device
                     </TableHeaderCell>
@@ -1806,7 +1807,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '100px'
+                      minWidth: '110px'
                     }}>
                       Destination Port
                     </TableHeaderCell>
@@ -1816,7 +1817,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '80px'
+                      minWidth: '90px'
                     }}>
                       Destination Port Speed
                     </TableHeaderCell>
@@ -1826,7 +1827,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '120px'
+                      minWidth: '140px'
                     }}>
                       Destination Device Location
                     </TableHeaderCell>
@@ -1836,7 +1837,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '100px'
+                      minWidth: '110px'
                     }}>
                       Duplicate Route
                     </TableHeaderCell>
@@ -1846,7 +1847,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '80px'
+                      minWidth: '90px'
                     }}>
                       Media
                     </TableHeaderCell>
@@ -1856,7 +1857,7 @@ connections:
                       backgroundColor: tokens.colorNeutralBackground2,
                       borderBottom: `2px solid ${tokens.colorNeutralStroke2}`,
                       padding: '12px 8px',
-                      minWidth: '80px'
+                      minWidth: '90px'
                     }}>
                       Options
                     </TableHeaderCell>
