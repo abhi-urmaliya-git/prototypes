@@ -10,9 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -o upstream",
-    "build:azure": "tsc && vite build --base=/",
-    "preview:azure": "vite preview --host"
+    "deploy": "gh-pages -d dist -o upstream"
   },
   "dependencies": {
     "@fluentui/react": "^8.117.0",
