@@ -501,6 +501,16 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground1,
     position: 'relative',
   },
+  leftDrawer: {
+    width: '20%',
+    minWidth: '280px',
+    maxWidth: '400px',
+  },
+  rightDrawer: {
+    width: '20%',
+    minWidth: '280px',
+    maxWidth: '400px',
+  },
   centerCanvas: {
     flex: 1,
     display: 'flex',
@@ -508,6 +518,7 @@ const useStyles = makeStyles({
     position: 'relative',
     backgroundColor: tokens.colorNeutralBackground1,
     minWidth: 0, // Allow canvas to shrink
+    width: '60%',
   },
   canvasToolbar: {
     display: 'flex',
@@ -1142,7 +1153,8 @@ connections:
       <InlineDrawer
         open={isLeftDrawerOpen}
         position="start"
-        size="medium"
+        size="small"
+        style={{ width: '20vw', minWidth: '280px', maxWidth: '400px' }}
       >
         <DrawerHeader>
           <DrawerHeaderTitle>Design Tools</DrawerHeaderTitle>
@@ -1238,7 +1250,8 @@ connections:
       <InlineDrawer
         open={isRightDrawerOpen}
         position="end"
-        size="medium"
+        size="small"
+        style={{ width: '20vw', minWidth: '280px', maxWidth: '400px' }}
       >
         <DrawerHeader>
           <DrawerHeaderTitle>Design Data</DrawerHeaderTitle>
