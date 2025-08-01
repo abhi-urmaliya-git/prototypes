@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://abhi-urmaliya-git.github.io/",
+  "homepage": "https://abhi-urmaliya-git.github.io/prototypes/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
