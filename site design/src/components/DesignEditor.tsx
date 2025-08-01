@@ -835,7 +835,7 @@ export default function DesignEditor() {
       <OverlayDrawer
         open={isValidationPanelOpen}
         onOpenChange={(_, { open }) => setIsValidationPanelOpen(open)}
-        position="start"
+        position="end"
         size="medium"
       >
         <DrawerHeader>
