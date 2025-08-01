@@ -318,8 +318,8 @@ export default function Layout({ children }: LayoutProps) {
           <Title3>
             {location.pathname === '/intake' || location.pathname === '/' ? 'All Intake Forms' :
              location.pathname === '/reviews' ? 'Network Design Reviews' :
-             location.pathname.startsWith('/design') ? 'Design Editor' :
              location.pathname === '/design-standards' ? 'Design Standards' :
+             location.pathname.startsWith('/design') ? 'Design Editor' :
              'Network Design Engineering'}
           </Title3>
           {location.pathname === '/reviews' && (
