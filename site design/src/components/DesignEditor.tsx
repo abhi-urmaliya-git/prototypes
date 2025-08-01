@@ -33,9 +33,7 @@ import {
   DrawerFooter,
   OverlayDrawer,
   InlineDrawer,
-  DataGrid,
   Input,
-  createTableColumn,
 } from '@fluentui/react-components'
 import {
   Save24Regular,
@@ -1382,116 +1380,98 @@ connections:
 
         <DrawerBody>
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <DataGrid
-              items={bomData}
-              columns={[
-                createTableColumn<BomItem>({
-                  columnId: 'modelNumber',
-                  compare: (a, b) => a.modelNumber.localeCompare(b.modelNumber),
-                  renderHeaderCell: () => 'Model Number',
-                  renderCell: (item) => (
-                    <Input
-                      value={item.modelNumber}
-                      onChange={(_, data) => {
-                        setBomData(prev => prev.map(row => 
-                          row.id === item.id ? { ...row, modelNumber: data.value } : row
-                        ))
-                      }}
-                      style={{ border: 'none', background: 'transparent' }}
-                    />
-                  ),
-                }),
-                createTableColumn<BomItem>({
-                  columnId: 'itemDescription',
-                  compare: (a, b) => a.itemDescription.localeCompare(b.itemDescription),
-                  renderHeaderCell: () => 'Item Description',
-                  renderCell: (item) => (
-                    <Input
-                      value={item.itemDescription}
-                      onChange={(_, data) => {
-                        setBomData(prev => prev.map(row => 
-                          row.id === item.id ? { ...row, itemDescription: data.value } : row
-                        ))
-                      }}
-                      style={{ border: 'none', background: 'transparent', width: '100%' }}
-                    />
-                  ),
-                }),
-                createTableColumn<BomItem>({
-                  columnId: 'qty',
-                  compare: (a, b) => a.qty - b.qty,
-                  renderHeaderCell: () => 'Qty',
-                  renderCell: (item) => (
-                    <Input
-                      type="number"
-                      value={item.qty.toString()}
-                      onChange={(_, data) => {
-                        const qty = parseInt(data.value) || 0
-                        setBomData(prev => prev.map(row => 
-                          row.id === item.id ? { 
-                            ...row, 
-                            qty, 
-                            totalCost: qty * row.unitPrice 
-                          } : row
-                        ))
-                      }}
-                      style={{ border: 'none', background: 'transparent', width: '80px' }}
-                    />
-                  ),
-                }),
-                createTableColumn<BomItem>({
-                  columnId: 'unitPrice',
-                  compare: (a, b) => a.unitPrice - b.unitPrice,
-                  renderHeaderCell: () => 'Unit Price',
-                  renderCell: (item) => (
-                    <Input
-                      type="number"
-                      value={item.unitPrice.toFixed(2)}
-                      onChange={(_, data) => {
-                        const unitPrice = parseFloat(data.value) || 0
-                        setBomData(prev => prev.map(row => 
-                          row.id === item.id ? { 
-                            ...row, 
-                            unitPrice, 
-                            totalCost: row.qty * unitPrice 
-                          } : row
-                        ))
-                      }}
-                      style={{ border: 'none', background: 'transparent', width: '120px' }}
-                    />
-                  ),
-                }),
-                createTableColumn<BomItem>({
-                  columnId: 'totalCost',
-                  compare: (a, b) => a.totalCost - b.totalCost,
-                  renderHeaderCell: () => 'Total Cost',
-                  renderCell: (item) => (
-                    <div style={{ padding: '8px', fontWeight: '600' }}>
-                      ${item.totalCost.toFixed(2)}
-                    </div>
-                  ),
-                }),
-                createTableColumn<BomItem>({
-                  columnId: 'comments',
-                  compare: (a, b) => a.comments.localeCompare(b.comments),
-                  renderHeaderCell: () => 'Comments',
-                  renderCell: (item) => (
-                    <Input
-                      value={item.comments}
-                      onChange={(_, data) => {
-                        setBomData(prev => prev.map(row => 
-                          row.id === item.id ? { ...row, comments: data.value } : row
-                        ))
-                      }}
-                      style={{ border: 'none', background: 'transparent', width: '100%' }}
-                    />
-                  ),
-                }),
-              ]}
-              sortable
-              selectionMode="multiselect"
-              style={{ flex: 1 }}
-            />
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <Table size="small">
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell>Model Number</TableHeaderCell>
+                    <TableHeaderCell>Item Description</TableHeaderCell>
+                    <TableHeaderCell>Qty</TableHeaderCell>
+                    <TableHeaderCell>Unit Price</TableHeaderCell>
+                    <TableHeaderCell>Total Cost</TableHeaderCell>
+                    <TableHeaderCell>Comments</TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bomData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Input
+                          value={item.modelNumber}
+                          onChange={(_, data) => {
+                            setBomData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, modelNumber: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={item.itemDescription}
+                          onChange={(_, data) => {
+                            setBomData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, itemDescription: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.qty.toString()}
+                          onChange={(_, data) => {
+                            const qty = parseInt(data.value) || 0
+                            setBomData(prev => prev.map(row => 
+                              row.id === item.id ? { 
+                                ...row, 
+                                qty, 
+                                totalCost: qty * row.unitPrice 
+                              } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '80px' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={item.unitPrice.toFixed(2)}
+                          onChange={(_, data) => {
+                            const unitPrice = parseFloat(data.value) || 0
+                            setBomData(prev => prev.map(row => 
+                              row.id === item.id ? { 
+                                ...row, 
+                                unitPrice, 
+                                totalCost: row.qty * unitPrice 
+                              } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '120px' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div style={{ padding: '8px', fontWeight: '600', color: tokens.colorBrandForeground1 }}>
+                          ${item.totalCost.toFixed(2)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={item.comments}
+                          onChange={(_, data) => {
+                            setBomData(prev => prev.map(row => 
+                              row.id === item.id ? { ...row, comments: data.value } : row
+                            ))
+                          }}
+                          style={{ border: 'none', background: 'transparent', width: '100%' }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
             
             <div style={{ 
               marginTop: '16px', 
@@ -1501,7 +1481,7 @@ connections:
               borderRadius: tokens.borderRadiusMedium
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Body1 style={{ fontWeight: '600' }}>Total Project Cost:</Body1>
+                <Body1 style={{ fontWeight: '600' }}>Order Total:</Body1>
                 <Title3 style={{ color: tokens.colorBrandForeground1 }}>
                   ${bomData.reduce((sum, item) => sum + item.totalCost, 0).toFixed(2)}
                 </Title3>
