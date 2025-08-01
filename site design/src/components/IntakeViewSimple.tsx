@@ -31,6 +31,11 @@ import {
   MenuItem,
   Field,
   Dropdown,
+  DrawerBody,
+  DrawerHeader,
+  DrawerHeaderTitle,
+  DrawerFooter,
+  OverlayDrawer,
 } from '@fluentui/react-components'
 import {
   Search24Regular,
@@ -673,62 +678,66 @@ export default function IntakeView() {
         </div>
       </div>
 
-      {/* Import Panel */}
-      <div 
-        className={`${styles.overlay} ${isImportPanelOpen ? styles.overlayVisible : ''}`}
-        onClick={() => setIsImportPanelOpen(false)}
-      />
-      
-      <div className={`${styles.importPanel} ${isImportPanelOpen ? styles.importPanelOpen : ''}`}>
-        {isImportPanelOpen && (
-          <>
-            <div className={styles.importPanelHeader}>
-              <Title3>Import Project</Title3>
+      {/* Import Project Drawer */}
+      <OverlayDrawer
+        open={isImportPanelOpen}
+        onOpenChange={(_, { open }) => setIsImportPanelOpen(open)}
+        position="end"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
               <Button
                 appearance="subtle"
+                aria-label="Close"
                 icon={<Dismiss24Regular />}
                 onClick={() => setIsImportPanelOpen(false)}
               />
-            </div>
-            
-            <div className={styles.importPanelContent}>
-              <Field label="Target System">
-                <Dropdown
-                  value={importSource}
-                  onOptionSelect={(_, data) => setImportSource(data.optionValue as 'ADO' | 'SNOW')}
-                >
-                  <Option value="ADO">Azure DevOps (ADO)</Option>
-                  <Option value="SNOW">ServiceNow (SNOW)</Option>
-                </Dropdown>
-              </Field>
-              
-              <Field label={importSource === 'ADO' ? 'Work Item ID' : 'RITM'}>
-                <Input
-                  placeholder={importSource === 'ADO' ? 'Enter work item ID' : 'Enter RITM number'}
-                  value={importId}
-                  onChange={(_, data) => setImportId(data.value)}
-                />
-              </Field>
-            </div>
+            }
+          >
+            Import Project
+          </DrawerHeaderTitle>
+        </DrawerHeader>
 
-            <div className={styles.importPanelFooter}>
-              <Button 
-                appearance="secondary" 
-                onClick={() => setIsImportPanelOpen(false)}
+        <DrawerBody>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Field label="Target System">
+              <Dropdown
+                value={importSource}
+                onOptionSelect={(_, data) => setImportSource(data.optionValue as 'ADO' | 'SNOW')}
               >
-                Cancel
-              </Button>
-              <Button 
-                appearance="primary" 
-                onClick={handleImport}
-                disabled={!importId}
-              >
-                Import
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
+                <Option value="ADO">Azure DevOps (ADO)</Option>
+                <Option value="SNOW">ServiceNow (SNOW)</Option>
+              </Dropdown>
+            </Field>
+            
+            <Field label={importSource === 'ADO' ? 'Work Item ID' : 'RITM'}>
+              <Input
+                placeholder={importSource === 'ADO' ? 'Enter work item ID' : 'Enter RITM number'}
+                value={importId}
+                onChange={(_, data) => setImportId(data.value)}
+              />
+            </Field>
+          </div>
+        </DrawerBody>
+
+        <DrawerFooter>
+          <Button 
+            appearance="secondary" 
+            onClick={() => setIsImportPanelOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            appearance="primary" 
+            onClick={handleImport}
+            disabled={!importId}
+          >
+            Import
+          </Button>
+        </DrawerFooter>
+      </OverlayDrawer>
 
       {/* Overlay */}
       <div 
