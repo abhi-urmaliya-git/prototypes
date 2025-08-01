@@ -19,6 +19,11 @@ import {
   Field,
   Dropdown,
   Option,
+  DrawerBody,
+  DrawerHeader,
+  DrawerHeaderTitle,
+  DrawerFooter,
+  OverlayDrawer,
 } from '@fluentui/react-components'
 import {
   Search24Regular,
@@ -36,15 +41,7 @@ const useStyles = makeStyles({
     ...shorthands.gap('20px'),
     position: 'relative',
   },
-  containerWithPanel: {
-    display: 'flex',
-    flexDirection: 'row',
-    ...shorthands.gap('20px'),
-    position: 'relative',
-    height: 'calc(100vh - 125px)',
-  },
   mainContent: {
-    flex: 1,
     display: 'flex',
     flexDirection: 'column',
     ...shorthands.gap('20px'),
@@ -70,36 +67,6 @@ const useStyles = makeStyles({
   actionCell: {
     display: 'flex',
     ...shorthands.gap('8px'),
-  },
-  panel: {
-    width: '400px',
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.padding('24px'),
-    ...shorthands.gap('20px'),
-    position: 'relative',
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  panelContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.gap('16px'),
-    flex: 1,
-  },
-  panelFooter: {
-    display: 'flex',
-    ...shorthands.gap('8px'),
-    justifyContent: 'flex-end',
-    marginTop: 'auto',
-    paddingTop: '16px',
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   noResults: {
     textAlign: 'center',
@@ -195,7 +162,7 @@ export default function IntakeView() {
   }
 
   return (
-    <div className={isImportPanelOpen ? styles.containerWithPanel : styles.container}>
+    <div className={styles.container}>
       <div className={styles.mainContent}>
         <div className={styles.header}>
           <Title2>Project Intake Management</Title2>
@@ -290,18 +257,30 @@ export default function IntakeView() {
         </Card>
       </div>
 
-      {isImportPanelOpen && (
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <Title2>Import Project</Title2>
-            <Button
-              appearance="subtle"
-              icon={<Dismiss24Regular />}
-              onClick={() => setIsImportPanelOpen(false)}
-            />
-          </div>
-          
-          <div className={styles.panelContent}>
+      {/* Import Project Drawer */}
+      <OverlayDrawer
+        open={isImportPanelOpen}
+        onOpenChange={(_, { open }) => setIsImportPanelOpen(open)}
+        position="end"
+        size="medium"
+      >
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
+              <Button
+                appearance="subtle"
+                aria-label="Close"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsImportPanelOpen(false)}
+              />
+            }
+          >
+            Import Project
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field label="Target System">
               <Dropdown
                 value={importSource}
@@ -320,24 +299,24 @@ export default function IntakeView() {
               />
             </Field>
           </div>
+        </DrawerBody>
 
-          <div className={styles.panelFooter}>
-            <Button 
-              appearance="secondary" 
-              onClick={() => setIsImportPanelOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              appearance="primary" 
-              onClick={handleImport}
-              disabled={!importId}
-            >
-              Import
-            </Button>
-          </div>
-        </div>
-      )}
+        <DrawerFooter>
+          <Button 
+            appearance="secondary" 
+            onClick={() => setIsImportPanelOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            appearance="primary" 
+            onClick={handleImport}
+            disabled={!importId}
+          >
+            Import
+          </Button>
+        </DrawerFooter>
+      </OverlayDrawer>
     </div>
   )
 }
