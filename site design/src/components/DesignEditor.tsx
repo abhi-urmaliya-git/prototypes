@@ -9,7 +9,6 @@ import {
   makeStyles,
   shorthands,
   tokens,
-  Divider,
   TabList,
   Tab,
   Textarea,
@@ -38,11 +37,6 @@ import {
   Server24Regular,
   Router24Regular,
   Circle16Regular,
-  ZoomIn24Regular,
-  ZoomOut24Regular,
-  ZoomFit24Regular,
-  Cursor24Regular,
-  Add24Regular,
   DocumentTable24Regular,
   Map24Regular,
   Checkmark24Regular,
@@ -51,13 +45,10 @@ import {
   CheckmarkCircle24Regular,
   Send24Regular,
 } from '@fluentui/react-icons'
-import { Tldraw, ShapeUtil, TLBaseShape, RecordProps, T, Rectangle2d, HTMLContainer, Geometry2d, TLResizeInfo, resizeBox, StateNode, DefaultToolbar, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, TLComponents, TLUiOverrides, TldrawUiMenuItem, useIsToolSelected, useTools, TLUiAssetUrlOverrides, TldrawUiMenuGroup } from 'tldraw'
+import { Tldraw, ShapeUtil, TLBaseShape, RecordProps, T, Rectangle2d, HTMLContainer, Geometry2d, TLResizeInfo, resizeBox, StateNode, DefaultToolbar, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, TLComponents, TLUiOverrides, TldrawUiMenuItem, useIsToolSelected, useTools, TLUiAssetUrlOverrides } from 'tldraw'
 import 'tldraw/tldraw.css'
 
 // Network Device Shape Types
-type NetworkDeviceType = 'router' | 'switch' | 'firewall' | 'server' | 'wireless-controller'
-
-// Network Device Shape Interface
 type NetworkDeviceShape = TLBaseShape<'network-device', {
   deviceType: string
   w: number
@@ -343,7 +334,7 @@ const uiOverrides: TLUiOverrides = {
     }
     return tools
   },
-  actions(editor, actions) {
+  actions(_, actions) {
     // Remove ALL style-related actions
     delete actions['toggle-style-panel']
     delete actions['toggle-styles']
@@ -699,26 +690,6 @@ interface Device {
   location?: string
 }
 
-interface CanvasDevice {
-  id: string
-  name: string
-  type: 'switch' | 'router' | 'server' | 'firewall' | 'wireless-controller'
-  x: number
-  y: number
-  ports?: string[]
-}
-
-interface CanvasConnection {
-  id: string
-  from: string
-  to: string
-  fromPort?: string
-  toPort?: string
-  type: 'ethernet' | 'fiber'
-  speed?: string
-  label?: string
-}
-
 const mockHierarchy: HierarchyNode[] = [
   {
     id: 'building1',
@@ -805,42 +776,6 @@ const mockDesignData = {
   ]
 }
 
-// Canvas devices positioned like the network diagram
-const canvasDevices: CanvasDevice[] = [
-  // Top routers
-  { id: 'router1', name: 'TenGigE0/0/0/2', type: 'router', x: 150, y: 80 },
-  { id: 'router2', name: 'Te0/0/0/1', type: 'router', x: 400, y: 60 },
-  { id: 'router3', name: 'TenGigE0/0/0/2', type: 'router', x: 650, y: 80 },
-  
-  // Middle switch and router
-  { id: 'switch1', name: 'label2\nlabel1', type: 'switch', x: 180, y: 200 },
-  { id: 'switch2', name: '1/1/48', type: 'switch', x: 420, y: 200 },
-  { id: 'switch3', name: '1/1/48', type: 'switch', x: 620, y: 200 },
-  
-  // Bottom wireless controllers
-  { id: 'wlc1', name: 'GE0/0/2', type: 'wireless-controller', x: 150, y: 350 },
-  { id: 'wlc2', name: 'GE0/0/2', type: 'wireless-controller', x: 620, y: 350 },
-]
-
-const canvasConnections: CanvasConnection[] = [
-  // Top level connections
-  { id: 'conn1', from: 'router1', to: 'router2', type: 'ethernet', label: 'Te0/0/0/1' },
-  { id: 'conn2', from: 'router2', to: 'router3', type: 'ethernet', label: 'Te0/0/0/1' },
-  
-  // Middle level connections
-  { id: 'conn3', from: 'router1', to: 'switch1', type: 'ethernet', label: '1/1/10' },
-  { id: 'conn4', from: 'router2', to: 'switch2', type: 'ethernet', label: '1/1/48' },
-  { id: 'conn5', from: 'router3', to: 'switch3', type: 'ethernet', label: '1/1/10' },
-  
-  // Cross connections
-  { id: 'conn6', from: 'switch1', to: 'switch3', type: 'ethernet', label: '1/1/50' },
-  { id: 'conn7', from: 'switch2', to: 'switch3', type: 'ethernet', label: '1/1/40' },
-  
-  // Bottom connections
-  { id: 'conn8', from: 'switch1', to: 'wlc1', type: 'ethernet', label: 'GE0/0/3' },
-  { id: 'conn9', from: 'switch3', to: 'wlc2', type: 'ethernet', label: 'GE0/0/3' },
-]
-
 export default function DesignEditor() {
   const styles = useStyles()
   const [leftTab, setLeftTab] = useState('generate')
@@ -850,45 +785,11 @@ export default function DesignEditor() {
   const [designTarget, setDesignTarget] = useState<string>('wan')
   const [designPrompt, setDesignPrompt] = useState('')
 
-  const [activeDevice, setActiveDevice] = useState<string | null>(null)
-  const [editor, setEditor] = useState<any>(null)
+  const [, setEditor] = useState<any>(null)
 
   // Custom shape utils and tools
   const customShapeUtils = [NetworkDeviceShapeUtil]
   const customTools = [RouterTool, SwitchTool, FirewallTool, ServerTool, WirelessTool]
-
-  // Function to create network device on canvas
-  const createNetworkDevice = (deviceType: NetworkDeviceType) => {
-    console.log('Creating network device:', deviceType)
-    console.log('Editor available:', !!editor)
-    
-    if (!editor) {
-      console.error('Editor not available yet')
-      return
-    }
-    
-    try {
-      const centerX = 400
-      const centerY = 300
-      
-      const shape = {
-        type: 'network-device' as const,
-        x: centerX - 40,
-        y: centerY - 40,
-        props: {
-          deviceType: deviceType as string,
-          w: 80,
-          h: 80,
-        },
-      }
-      
-      console.log('Creating network device shape:', shape)
-      editor.createShape(shape)
-      console.log('Network device shape created successfully')
-    } catch (error) {
-      console.error('Error creating network device shape:', error)
-    }
-  }
 
   const getHierarchyIcon = (type: string) => {
     switch (type) {
@@ -910,73 +811,6 @@ export default function DesignEditor() {
       case 'wireless-controller': return <Router24Regular className={styles.deviceIcon} />
       default: return <Circle16Regular />
     }
-  }
-
-  const getCanvasDeviceIcon = (type: string) => {
-    switch (type) {
-      case 'switch': return <Router24Regular />
-      case 'router': return <Router24Regular />
-      case 'firewall': return <Router24Regular />
-      case 'server': return <Server24Regular />
-      case 'wireless-controller': return <Router24Regular />
-      default: return <Circle16Regular />
-    }
-  }
-
-  const renderCanvasDevice = (device: CanvasDevice) => (
-    <div
-      key={device.id}
-      className={styles.canvasDevice}
-      style={{ left: device.x, top: device.y }}
-      title={device.name}
-    >
-      <div className={styles.canvasDeviceIcon}>
-        {getCanvasDeviceIcon(device.type)}
-      </div>
-      <div className={styles.deviceLabel}>
-        {device.name}
-      </div>
-    </div>
-  )
-
-  const renderCanvasConnection = (connection: CanvasConnection, devices: CanvasDevice[]) => {
-    const fromDevice = devices.find(d => d.id === connection.from)
-    const toDevice = devices.find(d => d.id === connection.to)
-    
-    if (!fromDevice || !toDevice) return null
-
-    const x1 = fromDevice.x + 40 // Center of device (80px width / 2)
-    const y1 = fromDevice.y + 40 // Center of device (80px height / 2)
-    const x2 = toDevice.x + 40
-    const y2 = toDevice.y + 40
-
-    const midX = (x1 + x2) / 2
-    const midY = (y1 + y2) / 2
-
-    return (
-      <g key={connection.id}>
-        <line
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          className={styles.deviceConnection}
-        />
-        {connection.label && (
-          <text
-            x={midX}
-            y={midY}
-            className={styles.connectionLabel}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="10"
-            fill="currentColor"
-          >
-            {connection.label}
-          </text>
-        )}
-      </g>
-    )
   }
 
   const renderTreeNode = (node: HierarchyNode, level: number = 0): JSX.Element => {
