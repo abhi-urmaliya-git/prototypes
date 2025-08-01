@@ -193,6 +193,53 @@ const useStyles = makeStyles({
     flex: '1',
     minHeight: '0',
   },
+  // Canvas device styles
+  canvasDevice: {
+    position: 'absolute',
+    width: '80px',
+    height: '80px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `2px solid ${tokens.colorBrandStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    boxShadow: tokens.shadow4,
+    '&:hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+  },
+  canvasDeviceIcon: {
+    fontSize: '24px',
+    color: tokens.colorBrandForeground1,
+    marginBottom: '4px',
+  },
+  deviceLabel: {
+    fontSize: '10px',
+    fontWeight: '600',
+    textAlign: 'center',
+    color: tokens.colorNeutralForeground1,
+    lineHeight: '1.2',
+  },
+  deviceConnection: {
+    position: 'absolute',
+    stroke: tokens.colorBrandStroke1,
+    strokeWidth: '2',
+    fill: 'none',
+    pointerEvents: 'none',
+  },
+  connectionLabel: {
+    position: 'absolute',
+    fontSize: '10px',
+    fontWeight: '500',
+    color: tokens.colorNeutralForeground2,
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.padding('2px', '4px'),
+    borderRadius: tokens.borderRadiusSmall,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
 })
 
 interface HierarchyNode {
@@ -210,6 +257,26 @@ interface Device {
   status: 'online' | 'offline' | 'warning'
   ports?: number
   location?: string
+}
+
+interface CanvasDevice {
+  id: string
+  name: string
+  type: 'switch' | 'router' | 'server' | 'firewall' | 'wireless-controller'
+  x: number
+  y: number
+  ports?: string[]
+}
+
+interface CanvasConnection {
+  id: string
+  from: string
+  to: string
+  fromPort?: string
+  toPort?: string
+  type: 'ethernet' | 'fiber'
+  speed?: string
+  label?: string
 }
 
 const mockHierarchy: HierarchyNode[] = [
@@ -298,6 +365,42 @@ const mockDesignData = {
   ]
 }
 
+// Canvas devices positioned like the network diagram
+const canvasDevices: CanvasDevice[] = [
+  // Top routers
+  { id: 'router1', name: 'TenGigE0/0/0/2', type: 'router', x: 150, y: 80 },
+  { id: 'router2', name: 'Te0/0/0/1', type: 'router', x: 400, y: 60 },
+  { id: 'router3', name: 'TenGigE0/0/0/2', type: 'router', x: 650, y: 80 },
+  
+  // Middle switch and router
+  { id: 'switch1', name: 'label2\nlabel1', type: 'switch', x: 180, y: 200 },
+  { id: 'switch2', name: '1/1/48', type: 'switch', x: 420, y: 200 },
+  { id: 'switch3', name: '1/1/48', type: 'switch', x: 620, y: 200 },
+  
+  // Bottom wireless controllers
+  { id: 'wlc1', name: 'GE0/0/2', type: 'wireless-controller', x: 150, y: 350 },
+  { id: 'wlc2', name: 'GE0/0/2', type: 'wireless-controller', x: 620, y: 350 },
+]
+
+const canvasConnections: CanvasConnection[] = [
+  // Top level connections
+  { id: 'conn1', from: 'router1', to: 'router2', type: 'ethernet', label: 'Te0/0/0/1' },
+  { id: 'conn2', from: 'router2', to: 'router3', type: 'ethernet', label: 'Te0/0/0/1' },
+  
+  // Middle level connections
+  { id: 'conn3', from: 'router1', to: 'switch1', type: 'ethernet', label: '1/1/10' },
+  { id: 'conn4', from: 'router2', to: 'switch2', type: 'ethernet', label: '1/1/48' },
+  { id: 'conn5', from: 'router3', to: 'switch3', type: 'ethernet', label: '1/1/10' },
+  
+  // Cross connections
+  { id: 'conn6', from: 'switch1', to: 'switch3', type: 'ethernet', label: '1/1/50' },
+  { id: 'conn7', from: 'switch2', to: 'switch3', type: 'ethernet', label: '1/1/40' },
+  
+  // Bottom connections
+  { id: 'conn8', from: 'switch1', to: 'wlc1', type: 'ethernet', label: 'GE0/0/3' },
+  { id: 'conn9', from: 'switch3', to: 'wlc2', type: 'ethernet', label: 'GE0/0/3' },
+]
+
 export default function DesignEditor() {
   const styles = useStyles()
   const [leftTab, setLeftTab] = useState('generate')
@@ -324,8 +427,76 @@ export default function DesignEditor() {
       case 'router': return <Router24Regular className={styles.deviceIcon} />
       case 'firewall': return <Router24Regular className={styles.deviceIcon} />
       case 'server': return <Server24Regular className={styles.deviceIcon} />
+      case 'wireless-controller': return <Router24Regular className={styles.deviceIcon} />
       default: return <Circle16Regular />
     }
+  }
+
+  const getCanvasDeviceIcon = (type: string) => {
+    switch (type) {
+      case 'switch': return <Router24Regular />
+      case 'router': return <Router24Regular />
+      case 'firewall': return <Router24Regular />
+      case 'server': return <Server24Regular />
+      case 'wireless-controller': return <Router24Regular />
+      default: return <Circle16Regular />
+    }
+  }
+
+  const renderCanvasDevice = (device: CanvasDevice) => (
+    <div
+      key={device.id}
+      className={styles.canvasDevice}
+      style={{ left: device.x, top: device.y }}
+      title={device.name}
+    >
+      <div className={styles.canvasDeviceIcon}>
+        {getCanvasDeviceIcon(device.type)}
+      </div>
+      <div className={styles.deviceLabel}>
+        {device.name}
+      </div>
+    </div>
+  )
+
+  const renderCanvasConnection = (connection: CanvasConnection, devices: CanvasDevice[]) => {
+    const fromDevice = devices.find(d => d.id === connection.from)
+    const toDevice = devices.find(d => d.id === connection.to)
+    
+    if (!fromDevice || !toDevice) return null
+
+    const x1 = fromDevice.x + 40 // Center of device (80px width / 2)
+    const y1 = fromDevice.y + 40 // Center of device (80px height / 2)
+    const x2 = toDevice.x + 40
+    const y2 = toDevice.y + 40
+
+    const midX = (x1 + x2) / 2
+    const midY = (y1 + y2) / 2
+
+    return (
+      <g key={connection.id}>
+        <line
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          className={styles.deviceConnection}
+        />
+        {connection.label && (
+          <text
+            x={midX}
+            y={midY}
+            className={styles.connectionLabel}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize="10"
+            fill="currentColor"
+          >
+            {connection.label}
+          </text>
+        )}
+      </g>
+    )
   }
 
   const renderTreeNode = (node: HierarchyNode, level: number = 0): JSX.Element => {
@@ -603,6 +774,13 @@ connections:
           </div>
         </div>
         <div className={styles.canvasViewport}>
+          {/* Render connections as SVG */}
+          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            {canvasConnections.map(connection => renderCanvasConnection(connection, canvasDevices))}
+          </svg>
+          
+          {/* Render devices */}
+          {canvasDevices.map(device => renderCanvasDevice(device))}
         </div>
       </div>
 
