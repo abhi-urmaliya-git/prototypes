@@ -4,6 +4,7 @@ import IntakeView from './components/IntakeViewSimple'
 import ReviewsView from './components/ReviewsView'
 import DesignEditor from './components/DesignEditor'
 import DesignStandards from './components/DesignStandards'
+import DesignStore from './components/DesignStore'
 import './App.css'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/reviews" element={<ReviewsView />} />
         <Route path="/design/:projectId" element={<DesignEditor />} />
         <Route path="/design-standards" element={<DesignStandards />} />
+        <Route path="/design-store" element={<DesignStore />} />
       </Routes>
     </Layout>
   )

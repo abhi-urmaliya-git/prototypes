@@ -13,6 +13,7 @@ import {
   ChevronDown16Regular,
   ChevronRight16Regular,
   Settings24Regular,
+  Database24Regular,
 } from '@fluentui/react-icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 
@@ -286,6 +287,17 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
 
                 <div 
+                  className={`${styles.navItem} ${styles.subNavItem} ${isCollapsed ? styles.subNavItemCollapsed : ''} ${isActiveRoute('/design-store') ? styles.navItemActive : ''}`}
+                  onClick={() => handleNavigation('/design-store')}
+                  title={isCollapsed ? 'Design Store' : ''}
+                >
+                  <Database24Regular className={`${styles.navIcon} ${isCollapsed ? styles.navIconCollapsed : ''}`} />
+                  <span className={isCollapsed ? styles.navTextHidden : styles.navText}>
+                    Design Store
+                  </span>
+                </div>
+
+                <div 
                   className={`${styles.navItem} ${styles.subNavItem} ${isCollapsed ? styles.subNavItemCollapsed : ''} ${isActiveRoute('/design-standards') ? styles.navItemActive : ''}`}
                   onClick={() => handleNavigation('/design-standards')}
                   title={isCollapsed ? 'Design Standards' : ''}
@@ -319,6 +331,7 @@ export default function Layout({ children }: LayoutProps) {
             {location.pathname === '/intake' || location.pathname === '/' ? 'All Intake Forms' :
              location.pathname === '/reviews' ? 'Network Design Reviews' :
              location.pathname === '/design-standards' ? 'Design Standards' :
+             location.pathname === '/design-store' ? 'Design Store' :
              location.pathname.startsWith('/design') ? 'Design Editor' :
              'Network Design Engineering'}
           </Title3>
